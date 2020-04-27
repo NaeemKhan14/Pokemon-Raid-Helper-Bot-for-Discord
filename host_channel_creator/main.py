@@ -8,6 +8,7 @@ TOKEN = os.getenv('DISCORD_TOKEN2')
 
 class Raid_Helper(discord.Client):
     channel_creator = None
+    new_chan = None
 
     # Print in console that the bot has connected to server
     async def on_ready(self):
@@ -31,25 +32,34 @@ class Raid_Helper(discord.Client):
 
             await message.channel.send(
                 "Channel named " + message.content.split(' ')[-1] + " has been created")  # TODO: add error-handling
-            new_chan = await server.create_text_channel(message.content.split(' ')[-1])
+            self.new_chan = await server.create_text_channel(message.content.split(' ')[-1])
             # Set permissions for the user in this new channel
-            await new_chan.set_permissions(message.author, manage_messages=True)
+            await self.new_chan.set_permissions(message.author, manage_messages=True)
 
-        # Mute user from channel
+        # Mute user in channel
         if message.content.startswith('$mute'):
             if self.channel_creator == message.author:
-                await message.channel.set_permissions(message.mentions[0], send_messages=False)
+                await self.new_chan.set_permissions(message.mentions[0], send_messages=False)
             else:
                 pass  # TODO: Error message
 
-        # Unmute user from channel
+        # Unmute user in channel
         if message.content.startswith('$unmute'):
             if self.channel_creator == message.author:
-                await message.channel.set_permissions(message.mentions[0], send_messages=True)
+                await self.new_chan.set_permissions(message.mentions[0], send_messages=True)
             else:
                 pass  # TODO: Error message
 
-        
+        # Kick user from server
+        if message.content.startswith('$kick'):
+            if self.channel_creator == message.author:
+                await self.new_chan.send(
+                    '' + message.mentions[0].name + " has been kicked from server by " + message.author.name)
+                await message.mentions[0].kick(reason="You have been kicked by a host")
+            else:
+                pass  # TODO: Error message
+
+
 # Initialize class object
 client = Raid_Helper()
 client.run(TOKEN)

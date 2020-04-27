@@ -6,7 +6,8 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN2')
 
 
-class CustomClient(discord.Client):
+class Raid_Helper(discord.Client):
+    channel_creator = None
 
     # Print in console that the bot has connected to server
     async def on_ready(self):
@@ -25,13 +26,30 @@ class CustomClient(discord.Client):
         if message.author == client.user:
             return
         # Respond to only those messages that start with given prefix
-        if message.content.startswith('$t'):
+        if message.content.startswith('$t'): # TODO: Check user permission and allow HOSTS only to use this command
+            self.channel_creator = message.author
+
             await message.channel.send(
                 "Channel named " + message.content.split(' ')[-1] + " has been created")  # TODO: add error-handling
             new_chan = await server.create_text_channel(message.content.split(' ')[-1])
+            # Set permissions for the user in this new channel
             await new_chan.set_permissions(message.author, manage_messages=True)
 
+        # Mute user from channel
+        if message.content.startswith('$mute'):
+            if self.channel_creator == message.author:
+                await message.channel.set_permissions(message.mentions[0], send_messages=False)
+            else:
+                pass  # TODO: Error message
 
+        # Unmute user from channel
+        if message.content.startswith('$unmute'):
+            if self.channel_creator == message.author:
+                await message.channel.set_permissions(message.mentions[0], send_messages=True)
+            else:
+                pass  # TODO: Error message
+
+        
 # Initialize class object
-client = CustomClient()
+client = Raid_Helper()
 client.run(TOKEN)

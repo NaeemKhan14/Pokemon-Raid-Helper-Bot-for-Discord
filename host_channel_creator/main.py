@@ -1,65 +1,106 @@
 import os
 import discord
-from dotenv import load_dotenv
-
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN2')
+from discord.ext import commands
 
 
-class Raid_Helper(discord.Client):
-    channel_creator = None
-    new_chan = None
-
-    # Print in console that the bot has connected to server
-    async def on_ready(self):
-        print(f'{self.user} has connected to Discord!')
-
-    # DM the new user a welcome message on join
-    async def on_member_join(self, member):
-        await member.create_dm()
-        await member.dm_channel.send(
-            f'Hi {member.name}, welcome to this amazingly empty discord server'
-        )
-
-    async def on_message(self, message):
-        server = discord.utils.get(self.guilds)
-        # Ignore self messages
-        if message.author == client.user:
-            return
-        # Respond to only those messages that start with given prefix
-        if message.content.startswith('$t'): # TODO: Check user permission and allow HOSTS only to use this command
-            self.channel_creator = message.author
-
-            await message.channel.send(
-                "Channel named " + message.content.split(' ')[-1] + " has been created")  # TODO: add error-handling
-            self.new_chan = await server.create_text_channel(message.content.split(' ')[-1])
-            # Set permissions for the user in this new channel
-            await self.new_chan.set_permissions(message.author, manage_messages=True)
-
-        # Mute user in channel
-        if message.content.startswith('$mute'):
-            if self.channel_creator == message.author:
-                await self.new_chan.set_permissions(message.mentions[0], send_messages=False)
-            else:
-                pass  # TODO: Error message
-
-        # Unmute user in channel
-        if message.content.startswith('$unmute'):
-            if self.channel_creator == message.author:
-                await self.new_chan.set_permissions(message.mentions[0], send_messages=True)
-            else:
-                pass  # TODO: Error message
-
-        # Kick user from server
-        if message.content.startswith('$kick'):
-            if self.channel_creator == message.author:
-                await self.new_chan.send(
-                    '' + message.mentions[0].name + " has been kicked from server by " + message.author.name)
-                await message.mentions[0].kick(reason="You have been kicked by a host")
-            else:
-                pass  # TODO: Error message
+TOKEN = 'NzA0MTc0OTg3NTYwNjE2MDU3.XqZWlA.6tdYxAYNBEU_-95AK8-LalJmxyo'  # Discord Token
+catename = 'Text Channels'  # Name of category you want channels made in
 
 
-# Initialize class object
-client = Raid_Helper()
+client = commands.Bot(command_prefix='$')
+
+
+createembed = discord.Embed()
+
+
+alreadymutedembeed = discord.Embed()
+
+
+discord.CustomActivity('Banishing players to the void.', emoji=None)
+
+
+@client.event
+async def on_ready():
+    print('Bot is ready.')
+
+
+# Create a channel
+@client.command()
+@commands.has_role('Shiny Raid Host')
+async def create(ctx, *, name=None):
+    if ctx.message.author == client.user:
+        return
+    if name is not None:
+        global channel_creator
+        channel_creator = ctx.message.author
+        await ctx.message.delete()
+        createembed.set_author(name="Channel named '" + name + "' has been created.", icon_url='https://cdn.discordapp.com/attachments/662128235982618635/704757893798428732/SeekPng.com_green-tick-icon-png_3672259.png')
+        await ctx.message.channel.send(embed=createembed)
+        category = discord.utils.get(ctx.guild.categories, name=catename)
+        global newchan
+        newchan = await ctx.guild.create_text_channel(name, category=category)
+        # Set permissions for the user in this new channel
+        await newchan.set_permissions(channel_creator, manage_messages=True)
+    elif name is None:
+        await ctx.message.channel.send('Please input a name for the channel after the command.')
+
+
+# Mute player
+@client.command()
+@commands.has_role('Shiny Raid Host')
+async def mute(ctx):
+    if channel_creator == ctx.message.author:
+        await newchan.set_permissions(ctx.message.mentions[0], send_messages=False)
+        await ctx.message.delete()
+        await ctx.message.channel.send(
+            'Darkrai used Disable. ' + ctx.message.mentions[0].mention + " no longer has permission to speak.")
+    elif:
+        alreadymutedembeed.set_author(name=ctx.message.mentions[0] + ' is already muted.', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/704762398896160818/CoolyDrinksPiss.png')
+    # Need to add check for if member is already muted.
+
+
+# Unmute player
+@client.command()
+@commands.has_role('Shiny Raid Host')
+async def unmute(ctx):
+    if channel_creator == ctx.message.author:
+        await newchan.set_permissions(ctx.message.mentions[0], send_messages=True)
+        await ctx.message.delete()
+        await message.channel.send(
+            'Disable has worn off for ' + message.mentions[0].mention + " and they are now able to speak.")
+    else:
+        await ctx.message.channel.send(embed=nopermembed)  # Error message
+
+
+# Ban player from channel
+@client.command()
+@commands.has_role('Shiny Raid Host')
+async def ban(ctx):
+    if channel_creator == ctx.message.author:
+        await ctx.message.delete()
+        await newchan.send(
+            'Darkrai used Dark Void. ' + message.mentions[0].mention + " has been banished to the void.")
+        await newchan.set_permissions(message.mentions[0], read_messages=False)
+    else:
+        await ctx.message.channel.send(embed=nopermembed)  # Error message
+
+
+# Unban player from channel
+@client.command()
+@commands.has_role('Shiny Raid Host')
+async def unban(ctx):
+    if channel_creator == ctx.message.author:
+        await ctx.message.delete()
+        await newchan.set_permissions(message.mentions[0], read_messages=True)
+        await newchan.send(
+            message.mentions[0].mention + " has been pardoned and released from the void.")
+    else:
+        await ctx.message.channel.send(embed=nopermembed)  # Error message
+
+
+
+
+
+
+
 client.run(TOKEN)

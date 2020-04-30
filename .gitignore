@@ -126,3 +126,5 @@ dmypy.json
 *.iml
 
 *.xml
+
+*.sqlite

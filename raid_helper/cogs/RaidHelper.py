@@ -37,27 +37,7 @@ class RaidHelper(commands.Cog, discord.Client):
         db.close()
         print('RaidHelper cog is loaded.')
 
-    @commands.command()
-    @commands.has_role('Shiny Raid Host')
-    async def delete(self, ctx):
-
-        # Get user data from DB
-        db = sqlite3.connect('RaidHelper.sqlite')
-        cursor = db.cursor()
-        row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {ctx.message.author.id}').fetchone()
-
-        # If there is any data, it means the user has a channel which can be deleted
-        if row:
-            await ctx.guild.get_channel(row[2]).delete()
-            await ctx.send("Channel " + row[3] + " has been deleted")
-            # Remove user data from DB
-            cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
-            db.commit()
-        else:
-            await ctx.message.channel.send('You do not have any channel created.')
-        cursor.close()
-        db.close()
-
+    # Create a channel
     @commands.command()
     @commands.has_role('Shiny Raid Host')
     async def create(self, ctx, chan_name=''):
@@ -70,7 +50,6 @@ class RaidHelper(commands.Cog, discord.Client):
             # Empty row data means user does not already have a channel created
             if row is None:
                 # Delete the user message and send an embed to the channel
-                await ctx.message.delete()
                 await ctx.message.channel.send(
                     embed=discord.Embed().set_author(name="Channel named '" + chan_name + "' has been created.",
                                                      icon_url='https://cdn.discordapp.com/attachments/662128235982618635/704757893798428732/SeekPng.com_green-tick-icon-png_3672259.png'))
@@ -103,6 +82,30 @@ class RaidHelper(commands.Cog, discord.Client):
             input_name_embed = discord.Embed(
                 description='<:x_:705214517961031751> Please input a name for the channel after the command.')
             await ctx.message.channel.send(embed=input_name_embed)
+        await ctx.message.delete()
+
+    # Delete a channel
+    @commands.command()
+    @commands.has_role('Shiny Raid Host')
+    async def delete(self, ctx):
+
+        # Get user data from DB
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {ctx.message.author.id}').fetchone()
+
+        # If there is any data, it means the user has a channel which can be deleted
+        if row:
+            await ctx.guild.get_channel(row[2]).delete()
+            await ctx.send("Channel " + row[3] + " has been deleted")
+            # Remove user data from DB
+            cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
+            db.commit()
+        else:
+            await ctx.message.channel.send('You do not have any channel created.')
+        cursor.close()
+        db.close()
+        await ctx.message.delete()
 
     # Mute player
     @commands.command()
@@ -119,7 +122,6 @@ class RaidHelper(commands.Cog, discord.Client):
             muted_users_row = cursor.execute(f'SELECT * FROM MutedUsers WHERE user_id = {member.id}').fetchone()
             # Check if user is already muted or not
             if not muted_users_row:
-                await ctx.message.delete()
                 await channel.set_permissions(member, send_messages=False)
                 await channel.send(embed=discord.Embed(
                     description='<:SeekPng:705124992349896795> **Darkrai used Disable.** ***' + member.display_name +
@@ -139,25 +141,39 @@ class RaidHelper(commands.Cog, discord.Client):
                 description='<:x_:705214517961031751> User not available or you do not have permissions in this channel'))
         cursor.close()
         db.close()
+        await ctx.message.delete()
 
     # Unmute player
     @commands.command()
     @commands.has_role('Shiny Raid Host')
-    async def unmute(self, ctx):
-        if ctx.message.mentions[0].permissions_in(
-                self.new_chan).send_messages and self.channel_creator == ctx.message.author and ctx.channel == self.new_chan:
-            await ctx.message.delete()
-            unmuted_embed = discord.Embed(
-                description='<:x_:705214517961031751> **Disable has already worn off for** ***' + ctx.message.mentions[
-                    0].name + "***")
-            await self.new_chan.send(embed=unmuted_embed)
-        elif self.channel_creator == ctx.message.author and ctx.channel == self.new_chan:
-            await self.new_chan.set_permissions(ctx.message.mentions[0], send_messages=True)
-            await ctx.message.delete()
-            disable_off_embed = discord.Embed(
-                description='<:SeekPng:705124992349896795> **Disable has worn off for** ***' + ctx.message.mentions[
-                    0].name + " and they are now able to speak.***")
-            await self.new_chan.send(embed=disable_off_embed)
+    async def unmute(self, ctx, member: discord.Member):
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        host_row = cursor.execute(
+            f'SELECT * FROM HostInfo WHERE user_id = {ctx.message.author.id} AND channel_id={ctx.message.channel.id}').fetchone()
+
+        # Check if the host has permissions to mute users in this channel
+        if host_row:
+            channel = ctx.guild.get_channel(host_row[2])
+            muted_users_row = cursor.execute(f'SELECT * FROM MutedUsers WHERE user_id = {member.id}').fetchone()
+            # Check if user is already muted or not
+            if muted_users_row:
+                await channel.set_permissions(member, send_messages=True)
+                await channel.send(embed=discord.Embed(
+                    description='<:SeekPng:705124992349896795> **Disable has worn off for** ***' + member.display_name +
+                                "*** **and they are now able to speak.**"))
+                cursor.execute(f'DELETE FROM MutedUsers WHERE user_id = {muted_users_row[0]}')
+                db.commit()
+            else:  # If user is already muted
+                await channel.send(embed=discord.Embed(
+                    description='<:SeekPng:705124992349896795> **Disable is not active for** ***' + member.display_name +
+                                "*** **and they are already allowed to speak.**"))
+        else:  # If user is not available or current channel != host's channel
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751> User not available or you do not have permissions in this channel'))
+        cursor.close()
+        db.close()
+        await ctx.message.delete()
 
     # Ban player from channel
     @commands.command()

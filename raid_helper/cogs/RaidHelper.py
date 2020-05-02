@@ -50,20 +50,21 @@ class RaidHelper(commands.Cog, discord.Client):
                 # Set permissions for the user in this new channel
                 await new_chan.set_permissions(ctx.message.author, manage_messages=True)
                 # Setup and command list
-                help_embed = discord.Embed(title="Welcome to ABC",
-                                      description="The following are the available bot commands that you can use. Please note that all commands must be executed from this channel.",
-                                      color=0x74729e)
+                help_embed = discord.Embed(title=f"Welcome to {chan_name}",
+                                           description="Following are the available bot commands that you can use. Please note that all commands must be executed from this channel.",
+                                           color=0x74729e)
                 help_embed.set_thumbnail(url="https://i.imgur.com/p146gWE.png")
-                help_embed.add_field(name="$mute @username", value="Revokes the user's rights to speak in this channel.",
-                                inline=False)
+                help_embed.add_field(name="$mute @username", value="Revokes the user's right to speak in this channel.",
+                                     inline=False)
                 help_embed.add_field(name="$unmute @username", value="Allows the user to speak in this channel again.",
-                                inline=False)
+                                     inline=False)
                 help_embed.add_field(name="$ban @username", value="Removes the user from this channel.", inline=False)
                 help_embed.add_field(name="$unban @username",
-                                value="Allows the user to join this channel again. Please note that you must provide the username along with the user discriminator. For example: $unban @User Name#9001.",
-                                inline=False)
+                                     value="Allows the user to join this channel again. Please note that you must provide the username along with the user discriminator. For example: $unban @User Name#9001.",
+                                     inline=False)
                 help_embed.add_field(name="$delete",
-                                value="Removes this room permanently along with all the messages/users.", inline=False)
+                                     value="Removes this room permanently along with all the messages/users.",
+                                     inline=False)
                 help_embed.set_footer(text="Don't forget to delete this channel once you are finished hosting!")
                 await new_chan.send(embed=help_embed)
                 # Write user and channel info into DB for later use

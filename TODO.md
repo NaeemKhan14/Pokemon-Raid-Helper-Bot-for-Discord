@@ -1,3 +1,4 @@
+- (High Priority) Fix embeds bug which makes unknown messages pop up
 - When someone creates new channel, shiny raids will be pingable, and after they ping it will not be pingable again.
 - If two people make a channel make sure shiny raids is tagged twice before ping option is off
 - Make a leaderboard to keep track of who hosts the most, keep track of this through how long the channel is open for.

@@ -42,7 +42,7 @@ class RaidHelper(commands.Cog, discord.Client):
             if row is None:
                 # Delete the user message and send an embed to the channel
                 await ctx.message.channel.send(
-                    embed=discord.Embed().set_author(name="Channel named '" + chan_name + "' has been created.",
+                    embed=discord.Embed().set_author(name="Channel named " + chan_name + " has been created.",
                                                      icon_url='https://cdn.discordapp.com/attachments/662128235982618635/704757893798428732/SeekPng.com_green-tick-icon-png_3672259.png'))
                 # Create a new channel based on category
                 category = discord.utils.get(ctx.guild.categories, name='Text Channels')
@@ -74,12 +74,13 @@ class RaidHelper(commands.Cog, discord.Client):
                 db.commit()
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751> ***You already have a channel created.***'))
+                    description=
+                    '<:x_:705214517961031751> **You already have a channel created.**'))
             cursor.close()
             db.close()
         else:
             input_name_embed = discord.Embed(
-                description='<:x_:705214517961031751> ***Invalid syntax. Please provide a name after the command. Example: $create channelname***')
+                description='<:x_:705214517961031751> **Invalid syntax. Please provide a name after the command. Example:** ***$create channelname***')
             await ctx.message.channel.send(embed=input_name_embed)
         await ctx.message.delete()
 
@@ -100,9 +101,14 @@ class RaidHelper(commands.Cog, discord.Client):
             cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
             db.commit()
         else:
-            await ctx.message.channel.send('***You do not have any channel created.***')
+            await ctx.message.channel.send('**You do not have any channels created.**')
         cursor.close()
         db.close()
+
+        try:
+            await ctx.message.delete()
+        except discord.errors.NotFound:
+            pass
 
     # Mute player
     @commands.command()
@@ -123,7 +129,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 await channel.set_permissions(member, send_messages=False)
                 await channel.send(embed=discord.Embed(
                     description='<:SeekPng:705124992349896795> **Darkrai used Disable.** ***' + member.display_name +
-                                " no longer has permission to speak.***"))
+                                "*** **no longer has permission to speak.**"))
                 cursor.execute(
                     """INSERT INTO MutedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
                     (member.id, member.display_name, ctx.message.channel.id, ctx.message.channel.name))
@@ -131,11 +137,11 @@ class RaidHelper(commands.Cog, discord.Client):
             else:  # If user is already muted
                 await channel.send(embed=discord.Embed(
                     description='<:x_:705214517961031751> **Darkrai used Disable.** ***' + member.display_name
-                                + " already has no permission to speak.***"))
+                                + "*** **already has no permission to speak.**"))
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> ***User not available or you do not have permissions in this channel.***'))
+                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
@@ -169,7 +175,7 @@ class RaidHelper(commands.Cog, discord.Client):
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> ***User not available or you do not have permissions in this channel.***'))
+                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
@@ -201,7 +207,7 @@ class RaidHelper(commands.Cog, discord.Client):
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> ***User not available or you do not have permissions in this channel.***'))
+                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
@@ -225,18 +231,18 @@ class RaidHelper(commands.Cog, discord.Client):
             if banned_users_row:
                 await channel.set_permissions(member, read_messages=True)
                 await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795> **' + member.display_name +
-                                "** ***has been pardoned from the void.**"))
+                    description='<:SeekPng:705124992349896795> ***' + member.display_name +
+                                "*** **has been pardoned from the void.**"))
                 cursor.execute(f'DELETE FROM BannedUsers WHERE user_id = {member.id}')
                 db.commit()
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751> **' + member.display_name +
-                                "** ***was never previously banned here.***"))
+                    description='<:x_:705214517961031751> ***' + member.display_name +
+                                "*** **was never previously banned here.**"))
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> ***User not available or you do not have permissions in this channel.***'))
+                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()

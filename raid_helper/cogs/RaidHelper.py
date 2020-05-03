@@ -102,7 +102,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 while onstep1:
                     await message.guild.get_channel(row[2]).send(embed=discord.Embed(
                         description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(text=
-                        'Step 1/3'))
+                        'Step 1/5'))
 
                     def check(msg):
                         return msg.channel == message.guild.get_channel(row[2])
@@ -114,6 +114,15 @@ class RaidHelper(commands.Cog, discord.Client):
                     else:
                         await step1.channel.send(
                             embed=discord.Embed(description="You are hosting **" + step1.content + ".** Is this correct? Y/N"))
+
+                    def check1(msg):
+                        return msg.channel == message.guild.get_channel(row[2])
+                    correction = await self.client.wait_for('message', check=check1)
+                    if correction.content == 'Y' or 'y':
+                        onstep1 = False
+                    elif correction.content == 'N' or 'n':
+                        onstep1 = True
+
 
             cursor.close()
             db.close()

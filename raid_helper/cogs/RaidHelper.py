@@ -1,12 +1,14 @@
 import discord
 from discord.ext import commands
 import sqlite3
-
+import asyncio
+import time
 
 class RaidHelper(commands.Cog, discord.Client):
 
     def __init__(self, client):
         self.client = client
+
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -14,7 +16,7 @@ class RaidHelper(commands.Cog, discord.Client):
         db = sqlite3.connect('RaidHelper.sqlite').cursor()
         db.execute(
             '''
-            CREATE TABLE IF NOT EXISTS HostInfo 
+            CREATE TABLE IF NOT EXISTS HostInfo
             (
                 user_id	INTEGER NOT NULL,
                 user_name TEXT NOT NULL,
@@ -48,11 +50,11 @@ class RaidHelper(commands.Cog, discord.Client):
                 category = discord.utils.get(ctx.guild.categories, name='Text Channels')
                 new_chan = await ctx.guild.create_text_channel(chan_name, category=category)
                 # Set permissions for the user in this new channel
-                await new_chan.set_permissions(ctx.message.author, manage_messages=True)
-                # Setup and command list
+                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='@everyone'),read_messages=False)
+                await new_chan.set_permissions(ctx.message.author, manage_messages=True, read_messages=True)
+                # Setup command list
                 help_embed = discord.Embed(title=f"Welcome to {chan_name}",
-                                           description="Following are the available bot commands that you can use. Please note that all commands must be executed from this channel.",
-                                           color=0x74729e)
+                                           description="Following are the available bot commands that you can use. Please note that all commands must be executed from this channel.")
                 help_embed.set_thumbnail(url="https://i.imgur.com/p146gWE.png")
                 help_embed.add_field(name="$mute @username", value="Revokes the user's right to speak in this channel.",
                                      inline=False)
@@ -66,7 +68,10 @@ class RaidHelper(commands.Cog, discord.Client):
                                      value="Removes this room permanently along with all the messages/users.",
                                      inline=False)
                 help_embed.set_footer(text="Don't forget to delete this channel once you are finished hosting!")
+                # Sends help embed and pins it
                 await new_chan.send(embed=help_embed)
+                await ctx.guild.get_channel(new_chan.id).last_message.pin()
+
                 # Write user and channel info into DB for later use
                 cursor.execute(
                     """INSERT INTO HostInfo (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
@@ -83,6 +88,36 @@ class RaidHelper(commands.Cog, discord.Client):
                 description='<:x_:705214517961031751> **Invalid syntax. Please provide a name after the command. Example:** ***$create channelname***')
             await ctx.message.channel.send(embed=input_name_embed)
         await ctx.message.delete()
+
+    # Steps for posting host embed
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.content.startswith('$create'):
+            await asyncio.sleep(2.5)
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {message.author.id}').fetchone()
+            onstep1 = True
+            if row:
+                while onstep1:
+                    await message.guild.get_channel(row[2]).send(embed=discord.Embed(
+                        description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(text=
+                        'Step 1/3'))
+
+                    def check(msg):
+                        return msg.channel == message.guild.get_channel(row[2])
+                    step1 = await self.client.wait_for('message', check=check)
+                    if 'rerolling' in step1.content:
+                        await step1.channel.send(
+                            embed=discord.Embed(
+                                description="You are **" + step1.content + ".** Is this correct? Y/N"))
+                    else:
+                        await step1.channel.send(
+                            embed=discord.Embed(description="You are hosting **" + step1.content + ".** Is this correct? Y/N"))
+
+            cursor.close()
+            db.close()
+
 
     # Delete a channel
     @commands.command()
@@ -170,7 +205,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 db.commit()
             else:  # If user is already muted
                 await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795> **Disable is not active for** ***' + member.display_name +
+                    description='<:x_:705214517961031751> **Disable is not active for** ***' + member.display_name +
                                 "*** **and they are already allowed to speak.**"))
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(

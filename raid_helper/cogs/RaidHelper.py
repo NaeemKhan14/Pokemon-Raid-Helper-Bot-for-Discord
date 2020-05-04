@@ -2,13 +2,12 @@ import discord
 from discord.ext import commands
 import sqlite3
 import asyncio
-import time
+
 
 class RaidHelper(commands.Cog, discord.Client):
 
     def __init__(self, client):
         self.client = client
-
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -34,7 +33,7 @@ class RaidHelper(commands.Cog, discord.Client):
     @commands.command()
     @commands.has_role('Shiny Raid Host')
     async def create(self, ctx, chan_name=''):
-
+        new_chan = None
         # If channel name is given
         if chan_name:
             db = sqlite3.connect('RaidHelper.sqlite')
@@ -50,7 +49,8 @@ class RaidHelper(commands.Cog, discord.Client):
                 category = discord.utils.get(ctx.guild.categories, name='Text Channels')
                 new_chan = await ctx.guild.create_text_channel(chan_name, category=category)
                 # Set permissions for the user in this new channel
-                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='@everyone'),read_messages=False)
+                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='@everyone'),
+                                               read_messages=False)
                 await new_chan.set_permissions(ctx.message.author, manage_messages=True, read_messages=True)
                 # Setup command list
                 help_embed = discord.Embed(title=f"Welcome to {chan_name}",
@@ -70,8 +70,6 @@ class RaidHelper(commands.Cog, discord.Client):
                 help_embed.set_footer(text="Don't forget to delete this channel once you are finished hosting!")
                 # Sends help embed and pins it
                 await new_chan.send(embed=help_embed)
-                await ctx.guild.get_channel(new_chan.id).last_message.pin()
-
                 # Write user and channel info into DB for later use
                 cursor.execute(
                     """INSERT INTO HostInfo (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
@@ -88,45 +86,55 @@ class RaidHelper(commands.Cog, discord.Client):
                 description='<:x_:705214517961031751> **Invalid syntax. Please provide a name after the command. Example:** ***$create channelname***')
             await ctx.message.channel.send(embed=input_name_embed)
         await ctx.message.delete()
+        await ctx.guild.get_channel(new_chan.id).last_message.pin()
 
     # Steps for posting host embed
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.content.startswith('$create'):
-            await asyncio.sleep(2.5)
-            db = sqlite3.connect('RaidHelper.sqlite')
-            cursor = db.cursor()
-            row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {message.author.id}').fetchone()
-            onstep1 = True
-            if row:
-                while onstep1:
-                    await message.guild.get_channel(row[2]).send(embed=discord.Embed(
-                        description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(text=
-                        'Step 1/5'))
+    async def on_guild_channel_create(self, channel: discord.TextChannel):
+        await asyncio.sleep(2.5)
+        await channel.send(embed=discord.Embed(
+            description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
+            text='Step 1/5'))
+        print(channel.last_message.author)
+        print(type(channel.last_message.author))
 
-                    def check(msg):
-                        return msg.channel == message.guild.get_channel(row[2])
-                    step1 = await self.client.wait_for('message', check=check)
-                    if 'rerolling' in step1.content:
-                        await step1.channel.send(
-                            embed=discord.Embed(
-                                description="You are **" + step1.content + ".** Is this correct? Y/N"))
-                    else:
-                        await step1.channel.send(
-                            embed=discord.Embed(description="You are hosting **" + step1.content + ".** Is this correct? Y/N"))
-
-                    def check1(msg):
-                        return msg.channel == message.guild.get_channel(row[2])
-                    correction = await self.client.wait_for('message', check=check1)
-                    if correction.content == 'Y' or 'y':
-                        onstep1 = False
-                    elif correction.content == 'N' or 'n':
-                        onstep1 = True
-
-
-            cursor.close()
-            db.close()
-
+        # if message.content.startswith('$create'):
+        #     await asyncio.sleep(2.5)
+        #     db = sqlite3.connect('RaidHelper.sqlite')
+        #     cursor = db.cursor()
+        #     row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {message.author.id}').fetchone()
+        #     onstep1 = True
+        #     if row:
+        #         while onstep1:
+        #             await message.guild.get_channel(row[2]).send(embed=discord.Embed(
+        #                 description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
+        #                 text=
+        #                 'Step 1/5'))
+        #
+        #             def check(msg):
+        #                 return msg.channel == message.guild.get_channel(row[2])
+        #
+        #             step1 = await self.client.wait_for('message', check=check)
+        #             if 'rerolling' in step1.content:
+        #                 await step1.channel.send(
+        #                     embed=discord.Embed(
+        #                         description="You are **" + step1.content + ".** Is this correct? Y/N"))
+        #             else:
+        #                 await step1.channel.send(
+        #                     embed=discord.Embed(
+        #                         description="You are hosting **" + step1.content + ".** Is this correct? Y/N"))
+        #
+        #             def check1(msg):
+        #                 return msg.channel == message.guild.get_channel(row[2])
+        #
+        #             correction = await self.client.wait_for('message', check=check1)
+        #             if correction.content == 'Y' or 'y':
+        #                 onstep1 = False
+        #             elif correction.content == 'N' or 'n':
+        #                 onstep1 = True
+        #
+        #     cursor.close()
+        #     db.close()
 
     # Delete a channel
     @commands.command()

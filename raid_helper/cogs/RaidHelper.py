@@ -90,51 +90,54 @@ class RaidHelper(commands.Cog, discord.Client):
 
     # Steps for posting host embed
     @commands.Cog.listener()
-    async def on_guild_channel_create(self, channel: discord.TextChannel):
-        await asyncio.sleep(2.5)
-        await channel.send(embed=discord.Embed(
-            description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
-            text='Step 1/5'))
-        print(channel.last_message.author)
-        print(type(channel.last_message.author))
+    async def on_message(self, message):
+        if message.content.startswith('$create'):
+            await asyncio.sleep(3)
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {message.author.id}').fetchone()
+            onstep1 = True
+            if row:
+                message1 = await message.guild.get_channel(row[2]).send(embed=discord.Embed(
+                    description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
+                    text=
+                    'Step 1/5'))
+                while onstep1:
 
-        # if message.content.startswith('$create'):
-        #     await asyncio.sleep(2.5)
-        #     db = sqlite3.connect('RaidHelper.sqlite')
-        #     cursor = db.cursor()
-        #     row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {message.author.id}').fetchone()
-        #     onstep1 = True
-        #     if row:
-        #         while onstep1:
-        #             await message.guild.get_channel(row[2]).send(embed=discord.Embed(
-        #                 description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
-        #                 text=
-        #                 'Step 1/5'))
-        #
-        #             def check(msg):
-        #                 return msg.channel == message.guild.get_channel(row[2])
-        #
-        #             step1 = await self.client.wait_for('message', check=check)
-        #             if 'rerolling' in step1.content:
-        #                 await step1.channel.send(
-        #                     embed=discord.Embed(
-        #                         description="You are **" + step1.content + ".** Is this correct? Y/N"))
-        #             else:
-        #                 await step1.channel.send(
-        #                     embed=discord.Embed(
-        #                         description="You are hosting **" + step1.content + ".** Is this correct? Y/N"))
-        #
-        #             def check1(msg):
-        #                 return msg.channel == message.guild.get_channel(row[2])
-        #
-        #             correction = await self.client.wait_for('message', check=check1)
-        #             if correction.content == 'Y' or 'y':
-        #                 onstep1 = False
-        #             elif correction.content == 'N' or 'n':
-        #                 onstep1 = True
-        #
-        #     cursor.close()
-        #     db.close()
+                    def check(msg):
+                        return msg.channel == message.guild.get_channel(row[2]) and msg.author == row[1]
+
+                    step1 = await self.client.wait_for('message', check=check)
+                    step1content = step1.content
+                    if 'rerolling' in step1.content:
+                        await message.guild.get_channel(row[2]).last_message.delete()
+                        await message1.edit(
+                            embed=discord.Embed(
+                                description="You are **" + step1content + ".** Is this correct? Y/N"))
+                    else:
+                        await message.guild.get_channel(row[2]).last_message.delete()
+                        await message1.edit(
+                            embed=discord.Embed(
+                                description="You are hosting **" + step1content + ".** Is this correct? Y/N"))
+                    #await message.guild.get_channel(row[2]).last_message.add_reaction('🇾')
+
+                    confirm = await self.client.wait_for('message', check=check)
+                    if confirm.content == 'Y':
+                        onstep1 = False
+                    if confirm.content == 'N' or confirm.content == 'n':
+                        await message.guild.get_channel(row[2]).last_message.delete()
+                        await message1.edit(embed=discord.Embed(
+                            description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
+                                text=
+                                'Step 1/5'))
+
+            cursor.close()
+            db.close()
+
+
+        # @commands.Cog.listener()
+        # async def on_reaction_add(reaction, user):
+        #     pass
 
     # Delete a channel
     @commands.command()

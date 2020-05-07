@@ -105,7 +105,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 while onstep1:
 
                     def check(msg):
-                        return msg.channel == message.guild.get_channel(row[2]) and msg.author == row[1]
+                        return msg.channel == message.guild.get_channel(row[2]) and msg.author.id == row[0]
 
                     step1 = await self.client.wait_for('message', check=check)
                     step1content = step1.content
@@ -121,33 +121,47 @@ class RaidHelper(commands.Cog, discord.Client):
                                 description="You are hosting **" + step1content + ".** Is this correct? Y/N"))
 
                     confirm = await self.client.wait_for('message', check=check)
-                    if confirm.content == 'Y':
+                    if confirm.content == 'Y' or confirm.content == 'y':
+                        await message.guild.get_channel(row[2]).last_message.delete()
                         onstep1 = False
                         onstep2 = True
                         await message1.edit(embed=discord.Embed(
-                            description="Please tell me the IVs in X/X/X/X/X/X format. If you are unsure of the IVs simply put 'idk'.").set_footer(
+                            description="Please tell me the IVs in XX/XX/XX/XX/XX/XX format. If you are unsure of the IVs simply put 'idk'.").set_footer(
                             text=
                             'Step 2/6'))
                     if confirm.content == 'N' or confirm.content == 'n':
                         await message.guild.get_channel(row[2]).last_message.delete()
                         await message1.edit(embed=discord.Embed(
-                            description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
+                            description="Please tell me what Pokemon or den you are hosting (include Gmax if Gmax). Feel free to put 'rerolling' and the den # if you are rerolling dens (do not include shininess, gender, etc. only the den/mon).").set_footer(
                                 text=
                                 'Step 1/5'))
-                if onstep2:
+                while onstep2:
                     step2 = await self.client.wait_for('message', check=check)
                     step2content = step2.content
                     if 'idk' in step2.content or 'Idk' in step2.content:
                         await message.guild.get_channel(row[2]).last_message.delete()
                         step2content = 'Unknown'
+                        onstep2 = False
+                        onstep3 = True
 
-                    elif re.search("[0-9]/[0-9]/[0-9]/[0-9]/[0-9]/[0-9]", step2content):
+                    elif re.search("[0-3][0-9][/][0-3][0-9][/][0-3][0-9][/][0-3][0-9][/][0-3][0-9][/][0-3][0-9]", step2content):
                         await message.guild.get_channel(row[2]).last_message.delete()
                         onstep2 = False
                         onstep3 = True
+                    else:
+                        await message.guild.get_channel(row[2]).last_message.delete()
+                        await message1.edit(embed=discord.Embed(
+                            description="Incorrect format. Please tell me the IVs in XX/XX/XX/XX/XX/XX format. If you are unsure of the IVs simply put 'idk'.").set_footer(
+                            text=
+                            'Step 2/6'))
                 if onstep3:
-                    pass
-
+                    await message1.edit(embed=discord.Embed(
+                        description="React with ⭐ if it is star shiny, 🟧 if it's square shiny, and 🇺 if you are unsure.").set_footer(
+                        text=
+                        'Step 3/6'))
+                    await message1.add_reaction('⭐')
+                    await message1.add_reaction('🟧')
+                    await message1.add_reaction('🇺')
 
             cursor.close()
             db.close()

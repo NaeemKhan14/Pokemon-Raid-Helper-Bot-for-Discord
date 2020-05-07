@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import sqlite3
 import asyncio
-
+import re
 
 class RaidHelper(commands.Cog, discord.Client):
 
@@ -99,9 +99,9 @@ class RaidHelper(commands.Cog, discord.Client):
             onstep1 = True
             if row:
                 message1 = await message.guild.get_channel(row[2]).send(embed=discord.Embed(
-                    description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
+                    description="Please tell me what Pokemon or den you are hosting (include Gmax if Gmax). Feel free to put 'rerolling' and the den # if you are rerolling dens (do not include shininess, gender, etc. only the den/mon).").set_footer(
                     text=
-                    'Step 1/5'))
+                    'Step 1/6'))
                 while onstep1:
 
                     def check(msg):
@@ -119,17 +119,35 @@ class RaidHelper(commands.Cog, discord.Client):
                         await message1.edit(
                             embed=discord.Embed(
                                 description="You are hosting **" + step1content + ".** Is this correct? Y/N"))
-                    #await message.guild.get_channel(row[2]).last_message.add_reaction('🇾')
 
                     confirm = await self.client.wait_for('message', check=check)
                     if confirm.content == 'Y':
                         onstep1 = False
+                        onstep2 = True
+                        await message1.edit(embed=discord.Embed(
+                            description="Please tell me the IVs in X/X/X/X/X/X format. If you are unsure of the IVs simply put 'idk'.").set_footer(
+                            text=
+                            'Step 2/6'))
                     if confirm.content == 'N' or confirm.content == 'n':
                         await message.guild.get_channel(row[2]).last_message.delete()
                         await message1.edit(embed=discord.Embed(
                             description="Please tell me what Pokemon or den you are hosting. Feel free to put 'rerolling' and the den # if you are rerolling dens.").set_footer(
                                 text=
                                 'Step 1/5'))
+                if onstep2:
+                    step2 = await self.client.wait_for('message', check=check)
+                    step2content = step2.content
+                    if 'idk' in step2.content or 'Idk' in step2.content:
+                        await message.guild.get_channel(row[2]).last_message.delete()
+                        step2content = 'Unknown'
+
+                    elif re.search("[0-9]/[0-9]/[0-9]/[0-9]/[0-9]/[0-9]", step2content):
+                        await message.guild.get_channel(row[2]).last_message.delete()
+                        onstep2 = False
+                        onstep3 = True
+                if onstep3:
+                    pass
+
 
             cursor.close()
             db.close()

@@ -4,6 +4,7 @@ import sqlite3
 import asyncio
 import re
 
+
 class RaidHelper(commands.Cog, discord.Client):
 
     def __init__(self, client):
@@ -21,6 +22,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 user_name TEXT NOT NULL,
                 channel_id INTEGER NOT NULL,
                 channel_name INTEGER NOT NULL,
+                message_id INTEGER,
                 PRIMARY KEY(user_id)
             )
             ''')

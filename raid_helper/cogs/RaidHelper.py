@@ -3,7 +3,7 @@ from discord.ext import commands
 import sqlite3
 import asyncio
 import re
-
+import datetime
 
 class RaidHelper(commands.Cog, discord.Client):
 
@@ -13,8 +13,9 @@ class RaidHelper(commands.Cog, discord.Client):
     @commands.Cog.listener()
     async def on_ready(self):
         # Create the DB table if it does not exist on startup
-        db = sqlite3.connect('RaidHelper.sqlite').cursor()
-        db.execute(
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS HostInfo
             (
@@ -23,18 +24,46 @@ class RaidHelper(commands.Cog, discord.Client):
                 channel_id INTEGER NOT NULL,
                 channel_name INTEGER NOT NULL,
                 message_id INTEGER,
+                time_start TEXT,
                 PRIMARY KEY(user_id)
             )
             ''')
-        db.execute("""CREATE TABLE IF NOT EXISTS MutedUsers AS SELECT * FROM HostInfo""")
-        db.execute("""CREATE TABLE IF NOT EXISTS BannedUsers AS SELECT * FROM HostInfo""")
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS NotHosting
+            (
+                message_id INTEGER NOT NULL,
+                PRIMARY KEY(message_id)
+            )
+            ''')
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS Leaderboards
+            (
+                user_id INTEGER NOT NULL,
+                time_hosted REAL,
+                PRIMARY KEY(user_id)
+            )
+            ''')
+        cursor.execute("""CREATE TABLE IF NOT EXISTS MutedUsers AS SELECT * FROM HostInfo""")
+        cursor.execute("""CREATE TABLE IF NOT EXISTS BannedUsers AS SELECT * FROM HostInfo""")
+        checkhosting = cursor.execute("""SELECT * FROM HostInfo""").fetchone()
+        checknothosting = cursor.execute("""SELECT * FROM NotHosting""").fetchone()
+        if checkhosting is None and checknothosting is None:
+            shinyraidschannel = discord.utils.get(self.client.get_all_channels(), name='shiny-raids')
+            message = await shinyraidschannel.send(embed=discord.Embed(description="<:x_:705214517961031751>  **No raids are currently being hosted.**"))
+            cursor.execute(
+                """INSERT INTO NotHosting (message_id) VALUES (?)""",
+                (message.id, ))
+            db.commit()
+        cursor.close()
         db.close()
         print('RaidHelper cog is loaded.')
 
     # Create a channel
     @commands.command()
     @commands.has_role('Shiny Raid Host')
-    async def create(self, ctx, chan_name=''):
+    async def create(self, ctx, *, chan_name=''):
         new_chan = None
         # If channel name is given
         if chan_name:
@@ -45,15 +74,16 @@ class RaidHelper(commands.Cog, discord.Client):
             if row is None:
                 # Delete the user message and send an embed to the channel
                 await ctx.message.channel.send(
-                    embed=discord.Embed().set_author(name="Channel named " + chan_name + " has been created.",
-                                                     icon_url='https://cdn.discordapp.com/attachments/662128235982618635/704757893798428732/SeekPng.com_green-tick-icon-png_3672259.png'))
+                    embed=discord.Embed(description="<:SeekPng:705124992349896795>  **Channel named '" + chan_name + "' has been created.**"))
                 # Create a new channel based on category
-                category = discord.utils.get(ctx.guild.categories, name='Text Channels')
+                category = discord.utils.get(ctx.guild.categories, name='✨ Pokemon ✨')
                 new_chan = await ctx.guild.create_text_channel(chan_name, category=category)
                 # Set permissions for the user in this new channel
-                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='@everyone'),
+                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='Member'),
                                                read_messages=False)
-                await new_chan.set_permissions(ctx.message.author, manage_messages=True, read_messages=True)
+                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='Bots'),
+                                               read_messages=True)
+                await new_chan.set_permissions(ctx.message.author, manage_messages=True, read_messages=True, mention_everyone=True)
                 # Setup command list
                 help_embed = discord.Embed(title=f"Welcome to {chan_name}",
                                            description="Following are the available bot commands that you can use. Please note that all commands must be executed from this channel.")
@@ -80,12 +110,12 @@ class RaidHelper(commands.Cog, discord.Client):
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
                     description=
-                    '<:x_:705214517961031751> **You already have a channel created.**'))
+                    '<:x_:705214517961031751>  **You already have a channel created.**'))
             cursor.close()
             db.close()
         else:
             input_name_embed = discord.Embed(
-                description='<:x_:705214517961031751> **Invalid syntax. Please provide a name after the command. Example:** ***$create channelname***')
+                description='<:x_:705214517961031751>  **Invalid syntax. Please provide a name after the command. Example:** ***$create channelname***')
             await ctx.message.channel.send(embed=input_name_embed)
         await ctx.message.delete()
         await ctx.guild.get_channel(new_chan.id).last_message.pin()
@@ -101,7 +131,7 @@ class RaidHelper(commands.Cog, discord.Client):
             onstep1 = True
             if row:
                 message1 = await message.guild.get_channel(row[2]).send(embed=discord.Embed(
-                    description="Please tell me what Pokemon or den you are hosting (include Gmax if Gmax) along with the nature in parathenses. Feel free to put 'rerolling' and the den # if you are rerolling dens (do not include shininess, gender, etc. only the den/mon and nature). Ex: Eevee (Modest)").set_footer(
+                    description="Please tell me what Pokemon or den you are hosting (include Gmax if Gmax) along with the nature in parantheses. Feel free to put 'rerolling' and the den # if you are rerolling dens (do not include shininess, gender, etc. only the den/mon and nature). Ex: Eevee (Modest)").set_footer(
                     text=
                     'Step 1/6'))
                 while onstep1:
@@ -271,14 +301,24 @@ class RaidHelper(commands.Cog, discord.Client):
                     if confirm.content == 'Y' or confirm.content == 'y':
                         await message.guild.get_channel(row[2]).last_message.delete()
                         onstep6 = False
-                        await message1.delete()
+
+                        # Grant permission for user to tag shiny raids
+                        shinyrole = discord.utils.get(message.guild.roles, name='Shiny Raids')
+                        shinyraidschannel = discord.utils.get(message.guild.text_channels, name='shiny-raids')
+                        user = discord.utils.get(message.guild.members, id=row[0])
+                        await message1.edit(embed=discord.Embed(
+                            description="Please tag " + shinyrole.mention + " in " + shinyraidschannel.mention + " to start hosting"))
+                        await shinyraidschannel.set_permissions(user, send_messages=True)
+                        await shinyrole.edit(mentionable=True)
+
                     if confirm.content == 'N' or confirm.content == 'n':
                         await message.guild.get_channel(row[2]).last_message.delete()
                         await message1.edit(embed=discord.Embed(
                             description="Please type any custom rules you may have such as no DD or removing off friend's list after hosting.").set_footer(
                             text=
                             'Step 6/6'))
-                # Create and send the hosting embed
+
+                # Create the hosting embed
                 hostingembed = discord.Embed(description='**' + step1content + "** is being hosted in " + message.guild.get_channel(row[2]).mention)
                 hostingembed.set_thumbnail(url=message.author.avatar_url)
                 hostingembed.add_field(name='Host:', value=message.author.mention, inline=False)
@@ -288,9 +328,37 @@ class RaidHelper(commands.Cog, discord.Client):
                 hostingembed.add_field(name='IVs:', value=step2content, inline=False)
                 hostingembed.add_field(name='Custom Rules:', value=step6content, inline=True)
                 hostingembed.set_footer(text='React with ✨ to gain access to the channel.')
+
+                # Get role and channel
                 shinyraidschannel = discord.utils.get(message.guild.text_channels, name='shiny-raids')
+                shinyrole = discord.utils.get(message.guild.roles, name='Shiny Raids')
+                user = discord.utils.get(message.guild.members, id=row[0])
+
+                # Check for ping
+                waitingforping = True
+                while waitingforping:
+                    def pingcheck(msg):
+                        return msg.channel == shinyraidschannel and msg.author.id == row[0]
+                    pingconfirm = await self.client.wait_for('message', check=pingcheck)
+                    if shinyrole.mention in pingconfirm.content:
+                        waitingforping = False
+                        await shinyraidschannel.set_permissions(user, send_messages=False)
+                        await shinyrole.edit(mentionable=False)
+                        await pingconfirm.delete()
+                        await message1.delete()
+                    else:
+                        await pingconfirm.delete()
+
+                nothosting = db.execute("""SELECT * FROM NotHosting""").fetchone()
+                if nothosting:
+                    nothostingmessage = await shinyraidschannel.fetch_message(nothosting[0])
+                    await nothostingmessage.delete()
+                    cursor.execute(f'DELETE FROM NotHosting WHERE message_id = {nothosting[0]}')
+                    db.commit()
                 message2 = await shinyraidschannel.send(embed=hostingembed)
                 await message2.add_reaction('✨')
+                cursor.execute(f'UPDATE HostInfo SET message_id = {message2.id} WHERE user_id = {row[0]}')
+                db.commit()
 
             cursor.close()
             db.close()
@@ -304,15 +372,54 @@ class RaidHelper(commands.Cog, discord.Client):
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {ctx.message.author.id}').fetchone()
-
         # If there is any data, it means the user has a channel which can be deleted
         if row:
+            bannedrow = cursor.execute(f'SELECT * FROM BannedUsers WHERE channel_id = {row[2]}').fetchone()
+            mutedrow = cursor.execute(f'SELECT * FROM MutedUsers WHERE channel_id = {row[2]}').fetchone()
+            leaderboardsrow = cursor.execute(f'SELECT * FROM Leaderboards WHERE user_id = {row[0]}').fetchone()
+
             await ctx.guild.get_channel(row[2]).delete()
-            # Remove user data from DB
+            shinyraidschannel = discord.utils.get(ctx.message.guild.text_channels, name='shiny-raids')
+
+            if row[4]:
+                hostmessage = await shinyraidschannel.fetch_message(row[4])
+                hosted_time = datetime.datetime.utcnow() - hostmessage.created_at
+                hostedtimeseconds = hosted_time.total_seconds()
+                hostedtimehours = hostedtimeseconds/3600
+
+                if leaderboardsrow:
+                    hostedtimehours += leaderboardsrow[1]
+                    cursor.execute(f'UPDATE Leaderboards SET time_hosted = {hostedtimehours} WHERE user_id = {row[0]}')
+                    db.commit()
+
+                else:
+                    cursor.execute(
+                        """INSERT INTO Leaderboards (user_id, time_hosted) VALUES (?, ?)""",
+                        (ctx.message.author.id, hostedtimehours))
+                    db.commit()
+
+                await hostmessage.delete()
+
+            if bannedrow:
+                cursor.execute(f'DELETE FROM BannedUsers WHERE channel_id = {row[2]}')
+                db.commit()
+            if mutedrow:
+                cursor.execute(f'DELETE FROM MutedUsers WHERE channel_id = {row[2]}')
+                db.commit()
             cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
             db.commit()
+
+            # See if anyone else is still hosting
+            checkhosting = db.execute("""SELECT * FROM HostInfo""").fetchone()
+            if checkhosting is None:
+                noraids = await shinyraidschannel.send(
+                    embed=discord.Embed(description="<:x_:705214517961031751>  **No raids are currently being hosted.**"))
+                db.execute(
+                    """INSERT INTO NotHosting (message_id) VALUES (?)""",
+                    (noraids.id,))
+                db.commit()
         else:
-            await ctx.message.channel.send('**You do not have any channels created.**')
+            await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751>  **You do not have any channels created.**'))
         cursor.close()
         db.close()
 
@@ -339,7 +446,7 @@ class RaidHelper(commands.Cog, discord.Client):
             if not muted_users_row:
                 await channel.set_permissions(member, send_messages=False)
                 await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795> **Darkrai used Disable.** ' + member.mention +
+                    description='<:SeekPng:705124992349896795>  **Darkrai used Disable.** ' + member.mention +
                                 " ***no longer has permission to speak.***"))
                 cursor.execute(
                     """INSERT INTO MutedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
@@ -347,12 +454,12 @@ class RaidHelper(commands.Cog, discord.Client):
                 db.commit()
             else:  # If user is already muted
                 await channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751> **Darkrai used Disable.** ' + member.mention
+                    description='<:x_:705214517961031751>  **Darkrai used Disable.** ' + member.mention
                                 + " ***already has no permission to speak.***"))
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
+                '<:x_:705214517961031751>  **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
@@ -375,18 +482,18 @@ class RaidHelper(commands.Cog, discord.Client):
             if muted_users_row:
                 await channel.set_permissions(member, send_messages=True)
                 await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795> **Disable has worn off for** ' + member.mention +
+                    description='<:SeekPng:705124992349896795>  **Disable has worn off for** ' + member.mention +
                                 " ***and they are now able to speak.***"))
                 cursor.execute(f'DELETE FROM MutedUsers WHERE user_id = {member.id}')
                 db.commit()
             else:  # If user is already muted
                 await channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751> **Disable is not active for** ' + member.mention +
+                    description='<:x_:705214517961031751>  **Disable is not active for** ' + member.mention +
                                 " ***and they are already allowed to speak.***"))
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
+                '<:x_:705214517961031751>  **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
@@ -409,7 +516,7 @@ class RaidHelper(commands.Cog, discord.Client):
             if not banned_users_row:
                 await channel.set_permissions(member, read_messages=False)
                 await channel.send(embed=discord.Embed(
-                    description='<:blackhole:705225042052644915> **Darkrai used Dark Void.** ' +
+                    description='<:SeekPng:705124992349896795>  **Darkrai used Dark Void. <:blackhole:705225042052644915>** ' +
                                 member.mention + " ***has been banished to the void.***"))
                 cursor.execute(
                     """INSERT INTO BannedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
@@ -418,7 +525,7 @@ class RaidHelper(commands.Cog, discord.Client):
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
+                '<:x_:705214517961031751>  **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
@@ -442,21 +549,121 @@ class RaidHelper(commands.Cog, discord.Client):
             if banned_users_row:
                 await channel.set_permissions(member, read_messages=True)
                 await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795> ' + member.mention +
-                                " ***has been pardoned from the void.***"))
+                    description='<:SeekPng:705124992349896795>  ' + member.mention +
+                                " ***has been pardoned from the void. <:blackhole:705225042052644915>***"))
                 cursor.execute(f'DELETE FROM BannedUsers WHERE user_id = {member.id}')
                 db.commit()
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751> ' + member.mention +
+                    description='<:x_:705214517961031751>  ' + member.mention +
                                 " ***was never previously banned here.***"))
         else:  # If user is not available or current channel != host's channel
             await ctx.message.channel.send(embed=discord.Embed(
                 description=
-                '<:x_:705214517961031751> **User not available or you do not have permissions in this channel.**'))
+                '<:x_:705214517961031751>  **User not available or you do not have permissions in this channel.**'))
         cursor.close()
         db.close()
         await ctx.message.delete()
+
+    # Force delete a channel
+    @commands.command()
+    @commands.has_role('Owner')
+    async def forcedelete(self, ctx, chan_id=''):
+        if chan_id:
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(
+                f'SELECT * FROM HostInfo WHERE channel_id = {chan_id}').fetchone()
+            bannedrow = cursor.execute(f'SELECT * FROM BannedUsers WHERE channel_id = {chan_id}').fetchone()
+            mutedrow = cursor.execute(f'SELECT * FROM MutedUsers WHERE channel_id = {chan_id}').fetchone()
+            leaderboardsrow = cursor.execute(f'SELECT * FROM Leaderboards WHERE user_id = {row[0]}').fetchone()
+
+            # If there is any data, it means the user has a channel which can be deleted
+            if row:
+                await ctx.guild.get_channel(row[2]).delete()
+                shinyraidschannel = discord.utils.get(ctx.message.guild.text_channels, name='shiny-raids')
+
+                if row[4]:
+                    hostmessage = await shinyraidschannel.fetch_message(row[4])
+                    hosted_time = datetime.datetime.utcnow() - hostmessage.created_at
+                    hostedtimeseconds = hosted_time.total_seconds()
+                    hostedtimehours = hostedtimeseconds / 3600
+
+                    if leaderboardsrow:
+                        hostedtimehours += leaderboardsrow[1]
+                        cursor.execute(
+                            f'UPDATE Leaderboards SET time_hosted = {hostedtimehours} WHERE user_id = {row[0]}')
+                        db.commit()
+
+                    else:
+                        cursor.execute(
+                            """INSERT INTO Leaderboards (user_id, time_hosted) VALUES (?, ?)""",
+                            (ctx.message.author.id, hostedtimehours))
+                        db.commit()
+
+                    await hostmessage.delete()
+
+                if bannedrow:
+                    cursor.execute(f'DELETE FROM BannedUsers WHERE channel_id = {row[2]}')
+                    db.commit()
+
+                if mutedrow:
+                    cursor.execute(f'DELETE FROM MutedUsers WHERE channel_id = {row[2]}')
+                    db.commit()
+
+                cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
+                db.commit()
+                success = discord.Embed(
+                    description='<:SeekPng:705124992349896795>  **Channel was successfully deleted.**')
+                await ctx.message.channel.send(embed=success)
+
+                checkhosting = db.execute("""SELECT * FROM NotHosting""").fetchone()
+                if checkhosting is None:
+                    noraids = await shinyraidschannel.send(
+                        embed=discord.Embed(
+                            description="<:x_:705214517961031751>  **No raids are currently being hosted.**"))
+                    db.execute(
+                        """INSERT INTO NotHosting (message_id) VALUES (?)""",
+                        (noraids.id,))
+                    db.commit()
+            else:
+                noid = discord.Embed(
+                    description='<:x_:705214517961031751>  **Channel with specified ID does not exist.**')
+                await ctx.message.channel.send(embed=noid)
+            cursor.close()
+            db.close()
+        else:
+            input_invalid = discord.Embed(
+                description='<:x_:705214517961031751>  **Invalid syntax. Please provide an id after the command. Example:** ***$forcedelete channelid***')
+            await ctx.message.channel.send(embed=input_invalid)
+        await ctx.message.delete()
+
+    # Give channel perms to those who react to the embed
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        if reaction.emoji == '✨':
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(
+                f'SELECT * FROM HostInfo WHERE message_id = {reaction.message.id}').fetchone()
+            bannedrow = cursor.execute(
+                f'SELECT * FROM BannedUsers WHERE user_id = {user.id}').fetchone()
+            if bannedrow is None and row:
+                hostchannel = discord.utils.get(reaction.message.guild.text_channels, id=row[2])
+                await hostchannel.set_permissions(user, read_messages=True)
+
+    # Remove channel perms to those who unreact to the embed
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        if reaction.emoji == '✨':
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(
+                f'SELECT * FROM HostInfo WHERE message_id = {reaction.message.id}').fetchone()
+            if row and user.id != row[0]:
+                hostchannel = discord.utils.get(reaction.message.guild.text_channels, id=row[2])
+                await hostchannel.set_permissions(user, read_messages=False)
+
 
 
 def setup(client):

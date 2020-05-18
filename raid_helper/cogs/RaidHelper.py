@@ -81,7 +81,9 @@ class RaidHelper(commands.Cog, discord.Client):
                 # Set permissions for the user in this new channel
                 await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='Member'),
                                                read_messages=False)
-                await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='Bots'),
+                await new_chan.set_permissions(ctx.message.guild.get_member(262691055030370306),
+                                               read_messages=True)
+                await new_chan.set_permissions(ctx.message.guild.get_member(663505910580248587),
                                                read_messages=True)
                 await new_chan.set_permissions(ctx.message.author, manage_messages=True, read_messages=True, mention_everyone=True)
                 # Setup command list
@@ -443,6 +445,11 @@ class RaidHelper(commands.Cog, discord.Client):
             channel = ctx.guild.get_channel(host_row[2])
             muted_users_row = cursor.execute(
                 f'SELECT * FROM MutedUsers WHERE user_id = {member.id} AND channel_id = {ctx.message.channel.id}').fetchone()
+
+            if ctx.author == member:
+                await channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **You cannot mute yourself**'))
+
             # Check if user is already muted or not
             if not muted_users_row:
                 await channel.set_permissions(member, send_messages=False)
@@ -513,6 +520,11 @@ class RaidHelper(commands.Cog, discord.Client):
             channel = ctx.guild.get_channel(host_row[2])
             banned_users_row = cursor.execute(
                 f'SELECT * FROM MutedUsers WHERE user_id = {member.id} AND channel_id = {ctx.message.channel.id}').fetchone()
+
+            if ctx.author == member:
+                await channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **You cannot ban yourself**'))
+
             # Check if user is already banned or not
             if not banned_users_row:
                 await channel.set_permissions(member, read_messages=False)
@@ -641,29 +653,29 @@ class RaidHelper(commands.Cog, discord.Client):
 
     # Give channel perms to those who react to the embed
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        if reaction.emoji == '✨':
+    async def on_raw_reaction_add(self, payload):
+        if str(payload.emoji) == '✨':
             db = sqlite3.connect('RaidHelper.sqlite')
             cursor = db.cursor()
             row = cursor.execute(
-                f'SELECT * FROM HostInfo WHERE message_id = {reaction.message.id}').fetchone()
+                f'SELECT * FROM HostInfo WHERE message_id = {payload.message_id}').fetchone()
             bannedrow = cursor.execute(
-                f'SELECT * FROM BannedUsers WHERE user_id = {user.id}').fetchone()
+                f'SELECT * FROM BannedUsers WHERE user_id = {payload.member.id}').fetchone()
             if bannedrow is None and row:
-                hostchannel = discord.utils.get(reaction.message.guild.text_channels, id=row[2])
-                await hostchannel.set_permissions(user, read_messages=True)
+                hostchannel = self.client.get_channel(id=row[2])
+                await hostchannel.set_permissions(payload.member, read_messages=True)
 
     # Remove channel perms to those who unreact to the embed
     @commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
-        if reaction.emoji == '✨':
+    async def on_raw_reaction_remove(self, payload):
+        if str(payload.emoji) == '✨':
             db = sqlite3.connect('RaidHelper.sqlite')
             cursor = db.cursor()
             row = cursor.execute(
-                f'SELECT * FROM HostInfo WHERE message_id = {reaction.message.id}').fetchone()
-            if row and user.id != row[0]:
-                hostchannel = discord.utils.get(reaction.message.guild.text_channels, id=row[2])
-                await hostchannel.set_permissions(user, read_messages=False)
+                f'SELECT * FROM HostInfo WHERE message_id = {payload.message_id}').fetchone()
+            if row and payload.user_id != row[0]:
+                hostchannel = self.client.get_channel(id=row[2])
+                await hostchannel.set_permissions(self.client.get_user(payload.user_id), read_messages=False)
 
 
 

@@ -411,7 +411,8 @@ class RaidHelper(commands.Cog, discord.Client):
 
             # See if anyone else is still hosting
             checkhosting = db.execute("""SELECT * FROM HostInfo""").fetchone()
-            if checkhosting is None:
+            checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
+            if checkhosting is None and checkmessage is None:
                 noraids = await shinyraidschannel.send(
                     embed=discord.Embed(description="<:x_:705214517961031751>  **No raids are currently being hosted.**"))
                 db.execute(

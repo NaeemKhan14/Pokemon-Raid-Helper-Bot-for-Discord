@@ -736,7 +736,7 @@ class RaidHelper(commands.Cog, discord.Client):
             f'SELECT * FROM Leaderboards WHERE user_id = {ctx.author.id}').fetchone()
         if row:
             await ctx.message.channel.send(embed=discord.Embed(
-                description='You currently have ' + round(row[1], 2) + ' hours hosted.'))
+                description='You currently have ' + str(round(row[1], 2)) + ' hours hosted.'))
         else:
             await ctx.message.channel.send(embed=discord.Embed(
                 description='You currently have **0** hours hosted.'))

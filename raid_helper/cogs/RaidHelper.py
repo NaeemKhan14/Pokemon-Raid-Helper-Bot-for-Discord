@@ -92,13 +92,13 @@ class RaidHelper(commands.Cog, discord.Client):
                                            description="Following are the available bot commands that you can use. Please note that all commands must be executed from this channel.")
                 help_embed.set_thumbnail(url="https://i.imgur.com/p146gWE.png")
                 help_embed.add_field(name="$mute @username", value="Revokes the user's right to speak in this channel.",
-                                     inline=True)
+                                     inline=False)
                 help_embed.add_field(name="$unmute @username", value="Allows the user to speak in this channel again.",
-                                     inline=True)
-                help_embed.add_field(name="$ban @username", value="Removes the user from this channel.", inline=True)
+                                     inline=False)
+                help_embed.add_field(name="$ban @username", value="Removes the user from this channel.", inline=False)
                 help_embed.add_field(name="$unban @username",
                                      value="Allows the user to join this channel again. Please note that you must provide the username along with the user discriminator. For example: $unban @User Name#9001.",
-                                     inline=True)
+                                     inline=False)
                 help_embed.add_field(name="$delete",
                                      value="Removes this room permanently along with all the messages/users.",
                                      inline=False)
@@ -326,10 +326,10 @@ class RaidHelper(commands.Cog, discord.Client):
                 hostingembed.set_thumbnail(url=message.author.avatar_url)
                 hostingembed.add_field(name='Host:', value=message.author.mention, inline=False)
                 hostingembed.add_field(name='Shiny:', value=step3content, inline=True)
-                hostingembed.add_field(name='Gender:', value=step5content, inline=False)
+                hostingembed.add_field(name='Gender:', value=step5content, inline=True)
                 hostingembed.add_field(name='Ability:', value=step4content, inline=True)
-                hostingembed.add_field(name='IVs:', value=step2content, inline=False)
-                hostingembed.add_field(name='Custom Rules:', value=step6content, inline=True)
+                hostingembed.add_field(name='IVs:', value=step2content, inline=True)
+                hostingembed.add_field(name='Custom Rules:', value=step6content, inline=False)
                 hostingembed.set_footer(text='React with ✨ to gain access to the channel.')
 
                 # Get role and channel

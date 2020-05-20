@@ -803,7 +803,7 @@ class RaidHelper(commands.Cog, discord.Client):
                     f'UPDATE Leaderboards SET time_hosted = {timehosted} WHERE user_id = {row[0]}')
                 db.commit()
             else:
-                timehosted=time
+                timehosted=float(time)
                 cursor.execute(
                     """INSERT INTO Leaderboards (user_id, time_hosted) VALUES (?, ?)""",
                     (member.id, time))

@@ -776,13 +776,15 @@ class RaidHelper(commands.Cog, discord.Client):
             cursor = db.cursor()
             row = cursor.execute(
                 f'SELECT * FROM Leaderboards WHERE user_id = {member.id}').fetchone()
-            timehosted = row[1] - float(time)
-            cursor.execute(
-                f'UPDATE Leaderboards SET time_hosted = {timehosted} WHERE user_id = {row[0]}')
-            db.commit()
-            await ctx.message.channel.send(embed=discord.Embed(description='You have subtracted **' + str(time) + '** hours from **' + member.display_name + '** and they have now hosted for **' + str(round(timehosted, 2)) + '** hours.'))
+            if row:
+                timehosted = row[1] - float(time)
+                cursor.execute(
+                    f'UPDATE Leaderboards SET time_hosted = {timehosted} WHERE user_id = {row[0]}')
+                db.commit()
+                await ctx.message.channel.send(embed=discord.Embed(description='You have subtracted **' + str(time) + '** hours from **' + member.display_name + '**, and they have now hosted for **' + str(round(timehosted, 2)) + '** hours.'))
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751>  **This member has not hosted before, so you may not subtract hours from them.'))
             await ctx.message.delete()
-
             cursor.close()
             db.close()
 
@@ -795,11 +797,18 @@ class RaidHelper(commands.Cog, discord.Client):
             cursor = db.cursor()
             row = cursor.execute(
                 f'SELECT * FROM Leaderboards WHERE user_id = {member.id}').fetchone()
-            timehosted = row[1] + float(time)
-            cursor.execute(
-                f'UPDATE Leaderboards SET time_hosted = {timehosted} WHERE user_id = {row[0]}')
-            db.commit()
-            await ctx.message.channel.send(embed=discord.Embed(description='You have added **' + str(time) + '** hours for **' + member.display_name + '** and they have now hosted for **' + str(round(timehosted, 2)) + '** hours.'))
+            if row:
+                timehosted = row[1] + float(time)
+                cursor.execute(
+                    f'UPDATE Leaderboards SET time_hosted = {timehosted} WHERE user_id = {row[0]}')
+                db.commit()
+            else:
+                timehosted=time
+                cursor.execute(
+                    """INSERT INTO Leaderboards (user_id, time_hosted) VALUES (?, ?)""",
+                    (member.id, time))
+                db.commit()
+            await ctx.message.channel.send(embed=discord.Embed(description='You have added **' + str(time) + '** hours for **' + member.display_name + '**, and they have now hosted for **' + str(round(timehosted, 2)) + '** hours.'))
             await ctx.message.delete()
 
             cursor.close()

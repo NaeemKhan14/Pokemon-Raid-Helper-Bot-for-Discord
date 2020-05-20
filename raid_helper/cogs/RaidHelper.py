@@ -729,7 +729,7 @@ class RaidHelper(commands.Cog, discord.Client):
     # Check hours hosted
     @commands.command()
     @commands.has_role('Shiny Raid Host')
-    async def hours(self, ctx, member: discord.Member):
+    async def hours(self, ctx, member: discord.Member = ''):
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         if member:
@@ -737,10 +737,10 @@ class RaidHelper(commands.Cog, discord.Client):
                 f'SELECT * FROM Leaderboards WHERE user_id = {member.id}').fetchone()
             if row:
                 await ctx.message.channel.send(embed=discord.Embed(
-                    description=member.display_name + ' currently has **' + str(round(row[1], 2)) + '** hours hosted.'))
+                    description='**' + member.display_name + '** currently has **' + str(round(row[1], 2)) + '** hours hosted.'))
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
-                    description=member.display_name + ' currently has **0** hours hosted.'))
+                    description='**' + member.display_name + '** currently has **0** hours hosted.'))
         else:
             row = cursor.execute(
                 f'SELECT * FROM Leaderboards WHERE user_id = {ctx.message.author.id}').fetchone()
@@ -762,6 +762,8 @@ class RaidHelper(commands.Cog, discord.Client):
         row = beforerow.fetchall()
 
         leaderboardembed = discord.Embed(title='Leaderboard', description='**1. ' + self.client.get_user(row[0][0]).name + '** - **' + str(round(row[0][1], 2)) + '** hours hosted \n **2. ' + self.client.get_user(row[1][0]).name + '** - **' + str(round(row[1][1], 2)) + '** hours hosted \n **3. ' + self.client.get_user(row[2][0]).name + '** - **' + str(round(row[2][1], 2)) + '** hours hosted \n **4. ' + self.client.get_user(row[3][0]).name + '** - **' + str(round(row[3][1], 2)) + '** hours hosted \n **5. ' + self.client.get_user(row[4][0]).name + '** - **' + str(round(row[4][1], 2)) + '** hours hosted \n **6. ' + self.client.get_user(row[5][0]).name + '** - **' + str(round(row[5][1], 2)) + '** hours hosted \n **7. ' + self.client.get_user(row[6][0]).name + '** - **' + str(round(row[6][1], 2)) + '** hours hosted \n **8. ' + self.client.get_user(row[7][0]).name + '** - **' + str(round(row[7][1], 2)) + '** hours hosted \n **9. ' + self.client.get_user(row[8][0]).name + '** - **' + str(round(row[8][1], 2)) + '** hours hosted \n **10. ' + self.client.get_user(row[9][0]).name + '** - **' + str(round(row[9][1], 2)) + '** hours hosted \n')
+        leaderboardembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
+        leaderboardembed.set_image(url='https://cdn.discordapp.com/attachments/704174855813070901/712734056885780553/2244140-200.png')
         await ctx.message.channel.send(embed=leaderboardembed)
 
         cursor.close()

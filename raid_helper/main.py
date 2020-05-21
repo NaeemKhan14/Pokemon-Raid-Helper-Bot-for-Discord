@@ -4,6 +4,7 @@ from discord.ext import commands
 TOKEN = os.getenv('DISCORD_TOKEN')
 client = commands.Bot(command_prefix='$', case_insensitive=True)
 
+client.remove_command('help')
 
 @client.command()
 @commands.has_role('admin')

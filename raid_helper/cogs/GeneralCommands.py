@@ -13,9 +13,7 @@ class GeneralCommands(commands.Cog, discord.Client):
         print('GeneralCommands cog is loaded.')
 
 
-
-
-
+    # Ping certain roles command
     @commands.command()
     @commands.has_any_role('Streamer', 'Giveaway', 'Event Host', 'Smash Ultimate')
     async def ping(self, ctx, role=''):
@@ -26,7 +24,7 @@ class GeneralCommands(commands.Cog, discord.Client):
         smashchannel = discord.utils.get(self.client.get_all_channels(), name='smash-ultimate')
 
         streamrole = discord.utils.get(ctx.message.guild.roles, name='Stream Notifications')
-        giveawayrole = discord.utils.get(ctx.message.guild.roles, name='Giveaways')
+        giveawayrole = discord.utils.get(ctx.message.guild.roles, name='Giveaway')
         eventsrole = discord.utils.get(ctx.message.guild.roles, name='Events')
         smashrole = discord.utils.get(ctx.message.guild.roles, name='Smash Ultimate')
 
@@ -84,6 +82,7 @@ class GeneralCommands(commands.Cog, discord.Client):
             await asyncio.sleep(60)
             await message.delete()
 
+    # Help command
     @commands.command()
     async def help(self, ctx):
         helpembed = discord.Embed(description='This is a list of commands that can be used. Some may only be used by certain roles.')
@@ -93,7 +92,14 @@ class GeneralCommands(commands.Cog, discord.Client):
         helpembed.add_field(name='Shiny Raids', value='`$create`, `$delete`, `$hours`, `$leaderboard`, `$mute`, `$unmute`, `$ban`, `$unban`, `$addhours`, `$subtracthours`, `$cleardb`, `$forcedelete`', inline=False)
         await ctx.message.channel.send(embed=helpembed)
 
-
+    # Server stats updating channels on join and leave
+    # @commands.Cog.listener()
+    # async def on_member_join(self, member):
+    #
+    #
+    #
+    # @commands.Cog.listener()
+    # async def on_member_remove(self, member):
 
 
 def setup(client):

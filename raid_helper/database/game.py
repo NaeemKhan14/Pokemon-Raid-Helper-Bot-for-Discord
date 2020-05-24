@@ -10,8 +10,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 import datetime
 from . import Base
-from ..config import EXPIRATION_TIMEDELTA
-from ..constants import ACTION_NONE
+import sys
+sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
+from raid_helper.config import EXPIRATION_TIMEDELTA
+from raid_helper.constants import ACTION_NONE
 
 
 class Game(Base):

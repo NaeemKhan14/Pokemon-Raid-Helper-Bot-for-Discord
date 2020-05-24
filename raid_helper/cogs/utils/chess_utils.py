@@ -7,8 +7,9 @@ import discord
 import io
 from cairosvg import svg2png
 from loguru import logger
-
-from .. import constants
+import sys
+sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
+from raid_helper import constants
 
 
 def load_from_pgn(pgn_str: str) -> chess.Board:

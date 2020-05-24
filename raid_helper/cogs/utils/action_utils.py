@@ -1,5 +1,7 @@
 from .game_utils import which_player, update_game
-from .. import database, constants
+import sys
+sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
+from raid_helper import database, constants
 
 
 def handle_action_offer(user: database.User, game: database.Game, action: int) -> None:

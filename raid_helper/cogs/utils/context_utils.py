@@ -4,7 +4,9 @@ from loguru import logger
 
 from .game_utils import get_game, update_game
 from .user_utils import get_database_user, create_database_user
-from .. import database
+import sys
+sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
+from raid_helper import database
 
 
 async def get_game_ctx(

@@ -8,8 +8,8 @@ from .chess_utils import (
 )
 from .user_utils import get_database_user
 from .elo_utils import recalculate_elo
-from raid_helper import constants, database
-from raid_helper.config import EXPIRATION_TIMEDELTA
+from .. import constants, database
+from ...config import EXPIRATION_TIMEDELTA
 
 from loguru import logger
 import datetime

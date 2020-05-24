@@ -1,4 +1,4 @@
-from raid_helper import database, constants
+from .. import database, constants
 
 
 def recalculate_elo(game: database.Game) -> None:

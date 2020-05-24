@@ -8,7 +8,7 @@ import io
 from cairosvg import svg2png
 from loguru import logger
 
-from raid_helper import constants
+from .. import constants
 
 
 def load_from_pgn(pgn_str: str) -> chess.Board:

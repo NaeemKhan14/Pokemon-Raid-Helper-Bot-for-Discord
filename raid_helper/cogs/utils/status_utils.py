@@ -5,7 +5,7 @@ from typing import Tuple
 from .chess_utils import load_from_pgn, to_png, get_turn
 from .user_utils import get_discord_user
 from .game_utils import who_offered_action
-from raid_helper import database, constants
+from .. import database, constants
 
 
 def _get_status_mentions(

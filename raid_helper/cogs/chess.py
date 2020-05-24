@@ -16,7 +16,7 @@ from .utils import (
     handle_move,
     update_ongoing_games,
 )
-from raid_helper import database, constants
+from .. import database, constants
 
 class Chess(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:

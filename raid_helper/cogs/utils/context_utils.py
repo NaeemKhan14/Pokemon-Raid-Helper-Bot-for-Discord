@@ -4,7 +4,7 @@ from loguru import logger
 
 from .game_utils import get_game, update_game
 from .user_utils import get_database_user, create_database_user
-from raid_helper import database
+from .. import database
 
 
 async def get_game_ctx(

@@ -1,5 +1,5 @@
 from .game_utils import which_player, update_game
-from raid_helper import database, constants
+from .. import database, constants
 
 
 def handle_action_offer(user: database.User, game: database.Game, action: int) -> None:

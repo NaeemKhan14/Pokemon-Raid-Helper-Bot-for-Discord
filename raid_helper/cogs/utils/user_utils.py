@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from raid_helper import database
+from .. import database
 
 
 def get_database_user(user_id: int) -> database.User:

@@ -1,5 +1,5 @@
 from .chess_utils import load_from_pgn, save_to_pgn, move, get_turn
-from raid_helper import database, constants
+from .. import database, constants
 
 
 def handle_turn_check(user: database.User, game: database.Game) -> None:

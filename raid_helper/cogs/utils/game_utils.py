@@ -8,10 +8,9 @@ from .chess_utils import (
 )
 from .user_utils import get_database_user
 from .elo_utils import recalculate_elo
-import sys
-sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
-from raid_helper import constants, database
-from raid_helper.config import EXPIRATION_TIMEDELTA
+
+import constants, database
+from config import EXPIRATION_TIMEDELTA
 
 from loguru import logger
 import datetime

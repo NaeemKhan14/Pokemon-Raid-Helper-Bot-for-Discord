@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
-import sys
-sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
-from raid_helper import database
+
+import database
 
 
 def get_database_user(user_id: int) -> database.User:

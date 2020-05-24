@@ -5,9 +5,8 @@ from typing import Tuple
 from .chess_utils import load_from_pgn, to_png, get_turn
 from .user_utils import get_discord_user
 from .game_utils import who_offered_action
-import sys
-sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
-from raid_helper import database, constants
+
+import database, constants
 
 
 def _get_status_mentions(

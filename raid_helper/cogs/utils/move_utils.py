@@ -1,7 +1,6 @@
 from .chess_utils import load_from_pgn, save_to_pgn, move, get_turn
-import sys
-sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
-from raid_helper import database, constants
+
+import database, constants
 
 
 def handle_turn_check(user: database.User, game: database.Game) -> None:

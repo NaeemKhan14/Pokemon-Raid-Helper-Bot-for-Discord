@@ -6,6 +6,7 @@ client = commands.Bot(command_prefix='$', case_insensitive=True)
 
 client.remove_command('help')
 
+
 @client.command()
 @commands.has_role('admin')
 async def reload(ctx, extension):
@@ -18,6 +19,5 @@ async def reload(ctx, extension):
 for file in os.listdir('./cogs'):
     if file.endswith('.py'):
         client.load_extension(f'cogs.{file[:-3]}')
-
 
 client.run(TOKEN)

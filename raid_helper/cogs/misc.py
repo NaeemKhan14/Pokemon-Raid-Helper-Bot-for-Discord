@@ -1,7 +1,7 @@
 import traceback
 from discord.ext import commands
 from .utils import get_author_user_ctx, get_vs_line, update_ongoing_games
-from raid_helper import database
+import database
 
 from loguru import logger
 

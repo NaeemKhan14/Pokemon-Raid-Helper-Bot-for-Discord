@@ -2,8 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import sqlite3
-import marshal
-
+import asyncio
 
 
 
@@ -85,7 +84,7 @@ class Hangman(commands.Cog, discord.Client):
                 guesses_left INTEGER NOT NULL,
                 guessed_letters TEXT,
                 word TEXT,
-                blanks BLOB,
+                blanks TEXT,
                 letters_found INTEGER,
                 PRIMARY KEY(user_id)
             )
@@ -113,8 +112,8 @@ class Hangman(commands.Cog, discord.Client):
             hangmanembed = discord.Embed(description="**Welcome to Hangman!** You have 6 guesses to get all of the letters in the word. To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n \n \_\_" + "\_\_​​ ​​​​​​​​​​\u200b \u200b \u200b \u200b \_\_".join(blanks) + "\_\_")
             hangmanembed.set_image(url='https://cdn.discordapp.com/attachments/704174855813070901/713472024919670833/dominatehangman-1600.png')
             hangmanmsg = await ctx.message.channel.send(embed=hangmanembed)
-            blank = marshal.dumps(blanks)
-            print(blank)
+            blank = ",".join(blanks)
+
             cursor.execute(
                 """INSERT INTO Hangman (user_id, message_id, guesses_left, word, blanks, letters_found) VALUES (?, ?, ?, ?, ?, ?)""",
                 (ctx.message.author.id, hangmanmsg.id, 6, word, blank, 0))
@@ -135,29 +134,42 @@ class Hangman(commands.Cog, discord.Client):
                 if str.isalpha(guess) and len(guess) is 1 and str.lower(guess) not in row[3]:
                     hangmanmsg = await ctx.message.channel.fetch_message(row[1])
                     if hangmanmsg:
-                        if str.lower(guess) in row[4]:
-                            for i in range(0, len(row[4])):
-                                if row[4][i] == str.lower(guess):
-                                    blanks = marshal.loads(row[5])
-                                    blanks[i] = str.lower(guess)
-                                    blanks2 = marshal.dumps(blanks)
-                                    cursor.execute(
-                                        f'UPDATE Hangman SET blanks = {str(blanks2)} WHERE user_id = {ctx.message.author.id}')
-                                    db.commit()
-                                    lettersfound = row[6] + 1
-                                    cursor.execute(
-                                        f'UPDATE Hangman SET letters_found = {lettersfound} WHERE user_id = {ctx.message.author.id}')
-                                    db.commit()
-                            guessedletters = row[3].append(str.lower(guess))
-                            cursor.execute(
-                                f'UPDATE Hangman SET guessed_letters = {guessedletters} WHERE user_id = {ctx.message.author.id}')
+                        matches = [x for x, letter in enumerate(row[4]) if letter == guess]
+                        if matches:
+                            for i in matches:
+                                blanks = row[5].split(',')
+                                blanks[i] = str.lower(guess)
+                                blanks2 = ",".join(blanks)
+                                cursor.execute("UPDATE HangMan SET blanks = ? WHERE user_id = ?",
+                                               (blanks2, ctx.message.author.id))
+                                db.commit()
+
+                                lettersfound = row[6] + 1
+                                cursor.execute(
+                                    f'UPDATE Hangman SET letters_found = {lettersfound} WHERE user_id = {ctx.message.author.id}')
+                                db.commit()
+
+                            # Adds guessed letter to the list and if one value then it's string
+                            row[3].split(',')
+                            if type(row[3]) is str:
+                                guessedletters = []
+                                guessedletters.append(row[3])
+                                guessedletters.append(guess)
+                                guessedletters = ",".join(guessedletters)
+                            else:
+                                guessedletters = row[3].append(str.lower(guess))
+                                guessedletters = ",".join(guessedletters)
+                            cursor.execute("UPDATE HangMan SET guessed_letters = ? WHERE user_id = ?",
+                                           (guessedletters, ctx.message.author.id))
                             db.commit()
+                            row = cursor.execute(
+                                f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
 
                             await hangmanmsg.edit(
                                 embed=discord.Embed(description="**Welcome to Hangman!** You have " + str(row[2]) + " guesses to get all of the letters in the word.  "
                                                                             "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n \n \_\_**" + "**\_\_    \_\_**".join(
-                                    json.loads(row[5])) + "**\_\_ \n Guessed letters: **" + ", ".join(
-                                    row[3]) + '**\n' + man[row[2]]))
+                                    row[5].split(',')) + "**\_\_ \n Guessed letters: **" + ", ".join(
+                                    row[3].split(',')) + '**\n' + man[row[2]]))
 
 
                         else:
@@ -165,58 +177,75 @@ class Hangman(commands.Cog, discord.Client):
                             cursor.execute(
                                 f'UPDATE Hangman SET guesses_left = {guessesleft} WHERE user_id = {ctx.message.author.id}')
                             db.commit()
-                            guessedLetters = row[3].append(str.lower(guess))
-                            cursor.execute(
-                                f'UPDATE Hangman SET guesses_letters = {guessedLetters} WHERE user_id = {ctx.message.author.id}')
+                            row[3].split(',')
+                            if type(row[3]) is str:
+                                guessedletters = []
+                                guessedletters.append(row[3])
+                                guessedletters.append(guess)
+                                guessedletters = ",".join(guessedletters)
+                            else:
+                                guessedletters = row[3].append(str.lower(guess))
+                                guessedletters = ",".join(guessedletters)
+                            cursor.execute("UPDATE HangMan SET guessed_letters = ? WHERE user_id = ?",
+                                           (guessedletters, ctx.message.author.id))
                             db.commit()
-
+                            row = cursor.execute(
+                                f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
                             await hangmanmsg.edit(
                                 embed=discord.Embed(description="**Welcome to Hangman!** You have " + str(
                                     row[2]) + " guesses to get all of the letters in the word.  "
                                               "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n \n \_\_**" + "**\_\_    \_\_**".join(
-                                    json.loads(row[5])) + "**\_\_ \n Guessed letters: **" + ", ".join(
-                                    row[3]) + '**\n' + man[row[2]]))
+                                    row[5].split(',')) + "**\_\_ \n Guessed letters: **" + ", ".join(
+                                    row[3].split(',')) + '**\n' + man[row[2]]))
 
                         if row[2] == 0:
                             await hangmanmsg.edit(embed=discord.Embed(description="No guesses left. **You lose!** The word was: **" + row[4] + "**\n Guessed letters: **" + ", ".join(
-                                row[3]) + '**\n' + man[row[2]]))
+                                row[3].split(',')) + '**\n' + man[row[2]]))
+                            cursor.execute(f'DELETE FROM Hangman WHERE user_id = {ctx.message.author.id}')
+                            db.commit()
                         if row[6] == len(row[4])-1:
-                            await hangmanmsg.edit(embed=discord.Embed(description="You guessed all the letters! **You've won!** The word was: **" + row[4] + '**').set_image(url='https://cdn.discordapp.com/attachments/704174855813070901/713472024919670833/dominatehangman-1600.png'))
+                            await hangmanmsg.edit(embed=discord.Embed(description="You guessed all the letters! **You've won!** The word was: **" + row[4] + '** \n Guessed letters: **' + ", ".join(
+                                    row[3].split(',')) + '**\n' + man[row[2]]).set_thumbnail(url='https://cdn.discordapp.com/attachments/704174855813070901/714603464675688508/trophy.png'))
+                            cursor.execute(f'DELETE FROM Hangman WHERE user_id = {ctx.message.author.id}')
+                            db.commit()
                     else:
-                        ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> **Please use the $guess command in the same channel where you started the game**"))
+                        message2 = await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> **Please use the $guess command in the same channel where you started the game**"))
+                        await asyncio.sleep(30)
+                        await message2.delete()
 
                 else:
-                    await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> You can only guess with single letters that haven't already been entered. Guessed letters: **" + " ".join(row[3]) + '**'))
+                    message2 = await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> You can only guess with single letters that haven't already been entered. Guessed letters: **" + ", ".join(row[3].split(',')) + '**'))
+                    await asyncio.sleep(30)
+                    await message2.delete()
 
             else:
                 if str.isalpha(guess) and len(guess) is 1:
                     hangmanmsg = await ctx.message.channel.fetch_message(row[1])
                     if hangmanmsg:
-                        if str.lower(guess) in row[4]:
-                            for i in range(0, len(row[4])):
-                                if row[4][i] == str.lower(guess):
-                                    blanks = marshal.loads(row[5])
-                                    blanks[i] = str.lower(guess)
-                                    blanks2 = marshal.dumps(blanks)
-                                    cursor.execute(
-                                        f'UPDATE Hangman SET blanks = {blanks2} WHERE user_id = {ctx.message.author.id}')
-                                    db.commit()
-                                    lettersfound = row[6] + 1
-                                    cursor.execute(
-                                        f'UPDATE Hangman SET letters_found = {lettersfound} WHERE user_id = {ctx.message.author.id}')
-                                    db.commit()
-                            guessedletters = []
-                            guessedletters2 = guessedletters.append(str.lower(guess))
-                            guessedletters = json.dumps(guessedletters2)
-                            cursor.execute(
-                                f'UPDATE Hangman SET guessed_letters = {guessedletters} WHERE user_id = {ctx.message.author.id}')
+                        matches = [x for x, letter in enumerate(row[4]) if letter == guess]
+                        if matches:
+                            for i in matches:
+                                blanks = row[5].split(',')
+                                blanks[i] = str.lower(guess)
+                                blanks2 = ",".join(blanks)
+                                cursor.execute("UPDATE HangMan SET blanks = ? WHERE user_id = ?", (blanks2, ctx.message.author.id))
+                                db.commit()
+
+                                lettersfound = row[6] + 1
+                                cursor.execute(
+                                    f'UPDATE Hangman SET letters_found = {lettersfound} WHERE user_id = {ctx.message.author.id}')
+                                db.commit()
+
+                            cursor.execute("UPDATE HangMan SET guessed_letters = ? WHERE user_id = ?", (guess, ctx.message.author.id))
                             db.commit()
+                            row = cursor.execute(
+                                f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
 
                             await hangmanmsg.edit(
                                 embed=discord.Embed(description="**Welcome to Hangman!** You have " + str(row[2]) + " guesses to get all of the letters in the word.  "
                                                                             "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n \n \_\_**" + "**\_\_    \_\_**".join(
-                                    json.loads(row[5])) + "**\_\_ \n Guessed letters: **" + ", ".join(
-                                    row[3]) + '**\n' + man[row[2]]))
+                                    row[5].split(',')) + "**\_\_ \n Guessed letters: **" +
+                                    str(row[3]) + '**\n' + man[row[2]]))
 
 
                         else:
@@ -225,33 +254,35 @@ class Hangman(commands.Cog, discord.Client):
                                 f'UPDATE Hangman SET guesses_left = {guessesleft} WHERE user_id = {ctx.message.author.id}')
                             db.commit()
 
-                            guessedLetters = []
-                            guessedletters2 = guessedLetters.append(str.lower(guess))
-                            cursor.execute(
-                                f'UPDATE Hangman SET guessed_letters = {guessedletters2} WHERE user_id = {ctx.message.author.id}')
+                            cursor.execute("UPDATE HangMan SET guessed_letters = ? WHERE user_id = ?",
+                                           (guess, ctx.message.author.id))
                             db.commit()
-
+                            row = cursor.execute(
+                                f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
                             await hangmanmsg.edit(
                                 embed=discord.Embed(description="**Welcome to Hangman!** You have " + str(
                                     row[2]) + " guesses to get all of the letters in the word.  "
                                               "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n \n \_\_**" + "**\_\_    \_\_**".join(
-                                    json.loads(row[5])) + "**\_\_ \n Guessed letters: **" + ", ".join(
-                                    row[3]) + '**\n' + man[row[2]]))
+                                    row[5].split(',')) + "**\_\_ \n Guessed letters: **" + row[3] + '**\n' + man[row[2]]))
 
-                        if row[2] == 0:
-                            await hangmanmsg.edit(embed=discord.Embed(description="No guesses left. **You lose!** The word was: **" + row[4] + "**\n Guessed letters: **" + ", ".join(
-                                row[3]) + '**\n' + man[row[2]]))
-                        if row[6] == len(row[4])-1:
-                            await hangmanmsg.edit(embed=discord.Embed(description="You guessed all the letters! **You've won!** The word was: **" + row[4] + '**').set_image(url='https://cdn.discordapp.com/attachments/704174855813070901/713472024919670833/dominatehangman-1600.png'))
                     else:
-                        ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> **Please use the $guess command in the same channel where you started the game**"))
+                        message2 = await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> **Please use the $guess command in the same channel where you started the game**"))
+                        await asyncio.sleep(30)
+                        await message2.delete()
 
                 else:
-                    await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> You can only guess with single letters that haven't already been entered. Guessed letters: **" + " ".join(row[3]) + '**'))
+                    message2 = await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> You can only guess with single letters that haven't already been entered. Guessed letters: **" + " ".join(row[3]) + '**'))
+                    await asyncio.sleep(30)
+                    await message2.delete()
 
         else:
-            await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> Start a game of Hangman with **$hangman** before trying to guess a letter!"))
+            message2 = await ctx.message.channel.send(embed=discord.Embed(description="<:x_:705214517961031751> Start a game of Hangman with **$hangman** before trying to guess a letter!"))
+            await asyncio.sleep(30)
+            await message2.delete()
+
         await ctx.message.delete()
+        cursor.close()
+        db.close()
 
 
     @commands.command()
@@ -274,6 +305,25 @@ class Hangman(commands.Cog, discord.Client):
         await ctx.message.delete()
         cursor.close()
         db.close()
+
+    @commands.command()
+    @commands.has_role('Owner')
+    async def hangmanclear(self, ctx, user_id=''):
+        if user_id:
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(
+                f'SELECT * FROM Hangman WHERE user_id = {user_id}').fetchone()
+            if row:
+                cursor.execute(f'DELETE FROM Hangman WHERE user_id = {user_id}')
+                db.commit()
+
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **User with specified ID does not exist in the database.**'))
+
+            cursor.close()
+            db.close()
 
 
 def setup(client):

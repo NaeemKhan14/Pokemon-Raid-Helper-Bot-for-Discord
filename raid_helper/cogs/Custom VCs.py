@@ -38,5 +38,6 @@ class CustomVCs(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751>  **Invalid syntax. Please provide a name after the command. Example:** ***$createvc channelname***'))
 
 
+
 def setup(client):
     client.add_cog(CustomVCs(client))

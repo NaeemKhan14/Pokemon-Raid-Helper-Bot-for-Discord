@@ -100,7 +100,7 @@ class Hangman(commands.Cog, discord.Client):
         row = cursor.execute(f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
         if row is None:
             lines = []
-            with open("/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanwords.txt", "r") as f:
+            with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanwords.txt", "r") as f:
                 lines = f.readlines()
             random_line_num = random.randrange(0, len(lines))
             word = lines[random_line_num]

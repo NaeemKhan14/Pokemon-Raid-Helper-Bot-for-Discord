@@ -227,6 +227,8 @@ class Hangman(commands.Cog, discord.Client):
                         matches = [x for x, letter in enumerate(row[4]) if letter == guess]
                         if matches:
                             for i in matches:
+                                row = cursor.execute(
+                                    f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
                                 blanks = row[5].split(',')
                                 blanks[i] = str.lower(guess)
                                 blanks2 = ",".join(blanks)

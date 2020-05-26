@@ -98,12 +98,10 @@ class Hangman(commands.Cog, discord.Client):
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         row = cursor.execute(f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
-        if row is None:
+        str.lower(theme)
+        if row is None and theme != 'themes':
             lines = []
-            str.lower(theme)
-            if theme == 'themes':
-                await ctx.message.channel.send(embed=discord.Embed(description='Use **$hangman {theme}** to play Hangman with specific themes. Themes include: **Classic** and **Pokemon**'))
-            elif theme == 'classic':
+            if theme == 'classic':
                 with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanwords.txt", "r") as f:
                     lines = f.readlines()
             elif theme == 'pokemon':
@@ -127,6 +125,9 @@ class Hangman(commands.Cog, discord.Client):
                 """INSERT INTO Hangman (user_id, message_id, guesses_left, word, blanks, letters_found) VALUES (?, ?, ?, ?, ?, ?)""",
                 (ctx.message.author.id, hangmanmsg.id, 6, word, blank, 0))
             db.commit()
+        elif theme == 'themes':
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='Use **$hangman {theme}** to play Hangman with specific themes. Themes include: **Classic** and **Pokemon**'))
         else:
             await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751> You are already in a game. Do **$hangmanend** to end your game.'))
         cursor.close()

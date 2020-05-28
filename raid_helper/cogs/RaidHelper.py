@@ -593,10 +593,10 @@ class RaidHelper(commands.Cog, discord.Client):
                 f'SELECT * FROM HostInfo WHERE channel_id = {chan_id}').fetchone()
             bannedrow = cursor.execute(f'SELECT * FROM BannedUsers WHERE channel_id = {chan_id}').fetchone()
             mutedrow = cursor.execute(f'SELECT * FROM MutedUsers WHERE channel_id = {chan_id}').fetchone()
-            leaderboardsrow = cursor.execute(f'SELECT * FROM Leaderboards WHERE user_id = {row[0]}').fetchone()
 
             # If there is any data, it means the user has a channel which can be deleted
             if row:
+                leaderboardsrow = cursor.execute(f'SELECT * FROM Leaderboards WHERE user_id = {row[0]}').fetchone()
                 await ctx.guild.get_channel(row[2]).delete()
                 shinyraidschannel = discord.utils.get(ctx.message.guild.text_channels, name='shiny-raids')
 
@@ -816,7 +816,23 @@ class RaidHelper(commands.Cog, discord.Client):
             cursor.close()
             db.close()
 
+    # Clear no raids msg db
+    @commands.command()
+    @commands.has_role('Owner')
+    async def clearnoraidmsg(self, ctx):
 
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        row = cursor.execute(f'SELECT * FROM NotHosting').fetchone()
+        if row:
+            cursor.execute(f'DELETE FROM NotHosting WHERE message_id = {row[0]}')
+            await ctx.message.channel.send(embed=discord.Embed(description='<:SeekPng:705124992349896795> Successfully cleared'))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751> Message id does not exist in database.'))
+        await ctx.message.delete()
+
+        cursor.close()
+        db.close()
 
 
 def setup(client):

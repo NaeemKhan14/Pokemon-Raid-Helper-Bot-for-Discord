@@ -178,7 +178,7 @@ class Hangman(commands.Cog, discord.Client):
                                 f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
 
                             await hangmanmsg.edit(
-                                embed=discord.Embed(description="**Welcome to Hangman" + ctx.message.author.mention + "!** You have " + str(row[2]) + " guesses to get all of the letters in the word.  "
+                                embed=discord.Embed(description="**Welcome to Hangman, " + ctx.message.author.mention + "!** \n You have " + str(row[2]) + " guesses to get all of the letters in the word. \n"
                                                                             "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n Use **$hangman themes** for a list of avaialble themes.\n \n \_\_**" + "**\_\_    \_\_**".join(
                                     row[5].split(',')) + "**\_\_ \n Guessed letters: **" + ", ".join(
                                     row[3].split(',')) + '**\n' + man[row[2]]))
@@ -204,19 +204,19 @@ class Hangman(commands.Cog, discord.Client):
                             row = cursor.execute(
                                 f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
                             await hangmanmsg.edit(
-                                embed=discord.Embed(description="**Welcome to Hangman" + ctx.message.author.mention + "!** You have " + str(
-                                    row[2]) + " guesses to get all of the letters in the word.  "
+                                embed=discord.Embed(description="**Welcome to Hangman, " + ctx.message.author.mention + "!** \n You have " + str(
+                                    row[2]) + " guesses to get all of the letters in the word. \n"
                                               "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n Use **$hangman themes** for a list of avaialble themes.\n \n \_\_**" + "**\_\_    \_\_**".join(
                                     row[5].split(',')) + "**\_\_ \n Guessed letters: **" + ", ".join(
                                     row[3].split(',')) + '**\n' + man[row[2]]))
 
                         if row[2] == 0:
-                            await hangmanmsg.edit(embed=discord.Embed(description=ctx.message.author.mention + "No guesses left. **You lose!** The word was: **" + row[4] + "**\n Guessed letters: **" + ", ".join(
+                            await hangmanmsg.edit(embed=discord.Embed(description=ctx.message.author.mention + " No guesses left. **You lose!** The word was: **" + row[4] + "**\n Guessed letters: **" + ", ".join(
                                 row[3].split(',')) + '**\n' + man[row[2]]))
                             cursor.execute(f'DELETE FROM Hangman WHERE user_id = {ctx.message.author.id}')
                             db.commit()
                         if row[6] == len(row[4])-1:
-                            await hangmanmsg.edit(embed=discord.Embed(description=ctx.message.author.mention + "You guessed all the letters! **You've won!** The word was: **" + row[4] + '** \n Guessed letters: **' + ", ".join(
+                            await hangmanmsg.edit(embed=discord.Embed(description=ctx.message.author.mention + " You guessed all the letters! **You've won!** The word was: **" + row[4] + '** \n Guessed letters: **' + ", ".join(
                                     row[3].split(',')) + '**\n' + man[row[2]]).set_thumbnail(url='https://cdn.discordapp.com/attachments/704174855813070901/714603464675688508/trophy.png'))
                             cursor.execute(f'DELETE FROM Hangman WHERE user_id = {ctx.message.author.id}')
                             db.commit()
@@ -256,7 +256,7 @@ class Hangman(commands.Cog, discord.Client):
                                 f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
 
                             await hangmanmsg.edit(
-                                embed=discord.Embed(description="**Welcome to Hangman" + ctx.message.author.mention + "!** You have " + str(row[2]) + " guesses to get all of the letters in the word.  "
+                                embed=discord.Embed(description="**Welcome to Hangman, " + ctx.message.author.mention + "!** \n You have " + str(row[2]) + " guesses to get all of the letters in the word. \n"
                                                                             "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n Use **$hangman themes** for a list of avaialble themes.\n \n \_\_**" + "**\_\_    \_\_**".join(
                                     row[5].split(',')) + "**\_\_ \n Guessed letters: **" +
                                     str(row[3]) + '**\n' + man[row[2]]))
@@ -274,8 +274,8 @@ class Hangman(commands.Cog, discord.Client):
                             row = cursor.execute(
                                 f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
                             await hangmanmsg.edit(
-                                embed=discord.Embed(description="**Welcome to Hangman" + ctx.message.author.mention + "!** You have " + str(
-                                    row[2]) + " guesses to get all of the letters in the word.  "
+                                embed=discord.Embed(description="**Welcome to Hangman, " + ctx.message.author.mention + "!** \n You have " + str(
+                                    row[2]) + " guesses to get all of the letters in the word. \n"
                                               "To guess a letter, type **$guess {letter}** \n To end the game, type **$hangmanend** \n Use **$hangman themes** for a list of avaialble themes.\n \n \_\_**" + "**\_\_    \_\_**".join(
                                     row[5].split(',')) + "**\_\_ \n Guessed letters: **" + row[3] + '**\n' + man[row[2]]))
 
@@ -331,6 +331,8 @@ class Hangman(commands.Cog, discord.Client):
             if row:
                 cursor.execute(f'DELETE FROM Hangman WHERE user_id = {user_id}')
                 db.commit()
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:SeekPng:705124992349896795>  **Database successfully cleared for user.**'))
 
             else:
                 await ctx.message.channel.send(embed=discord.Embed(

@@ -26,10 +26,9 @@ pikachu
 raichu
 sandshrew
 sandslash
-nidoran?
+nidoran
 nidorina
 nidoqueen
-nidoran?
 nidorino
 nidoking
 clefairy
@@ -80,7 +79,7 @@ slowpoke
 slowbro
 magnemite
 magneton
-farfetch'd
+farfetchd
 doduo
 dodrio
 seel
@@ -119,7 +118,6 @@ goldeen
 seaking
 staryu
 starmie
-mr. mime
 scyther
 jynx
 electabuzz
@@ -779,13 +777,6 @@ mimikyu
 bruxish
 drampa
 dhelmise
-jangmo-o
-hakamo-o
-kommo-o
-tapu koko
-tapu lele
-tapu bulu
-tapu fini
 cosmog
 cosmoem
 solgaleo
@@ -862,8 +853,7 @@ grimmsnarl
 obstagoon
 perrserker
 cursola
-sirfetch'd
-mr. rime
+sirfetchd
 runerigus
 milcery
 alcremie

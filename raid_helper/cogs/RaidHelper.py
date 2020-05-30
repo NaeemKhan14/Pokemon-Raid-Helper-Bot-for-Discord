@@ -826,9 +826,10 @@ class RaidHelper(commands.Cog, discord.Client):
         row = cursor.execute(f'SELECT * FROM NotHosting').fetchone()
         if row:
             cursor.execute(f'DELETE FROM NotHosting WHERE message_id = {row[0]}')
-            await ctx.message.channel.send(embed=discord.Embed(description='<:SeekPng:705124992349896795> Successfully cleared'))
+            db.commit()
+            await ctx.message.channel.send(embed=discord.Embed(description='<:SeekPng:705124992349896795> **Successfully cleared!**'))
         else:
-            await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751> Message id does not exist in database.'))
+            await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751> **Message ID does not exist in the database.**'))
         await ctx.message.delete()
 
         cursor.close()

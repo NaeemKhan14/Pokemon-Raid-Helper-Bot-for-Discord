@@ -642,15 +642,13 @@ class RaidHelper(commands.Cog, discord.Client):
                         (noraids.id,))
                     db.commit()
             else:
-                noid = discord.Embed(
-                    description='<:x_:705214517961031751>  **Channel with specified ID does not exist.**')
-                await ctx.message.channel.send(embed=noid)
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **Channel with specified ID does not exist.**'))
             cursor.close()
             db.close()
         else:
-            input_invalid = discord.Embed(
-                description='<:x_:705214517961031751>  **Invalid syntax. Please provide an id after the command. Example:** ***$forcedelete channelid***')
-            await ctx.message.channel.send(embed=input_invalid)
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  **Invalid syntax. Please provide an id after the command. Example:** ***$forcedelete channelid***'))
         await ctx.message.delete()
 
     # Give channel perms to those who react to the embed

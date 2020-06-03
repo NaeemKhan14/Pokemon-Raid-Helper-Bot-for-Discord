@@ -293,6 +293,42 @@ class CustomVCs(commands.Cog, discord.Client):
                 description='<:x_:705214517961031751> ' + ctx.message.author.mention + ' **Please specify a user to unban.**'))
         await ctx.message.delete()
 
+    # Force delete a custom vc
+    @commands.command()
+    async def forcedeletevc(self, ctx, channelid = ''):
+        if channelid:
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(f'SELECT * FROM CustomVCs WHERE channel_id = {channelid}').fetchone()
+            if row:
+                mutedrow = cursor.execute(f'SELECT * FROM MutedVC WHERE channel_id = {row[1]}').fetchone()
+                bannedrow = cursor.execute(f'SELECT * FROM BannedVC WHERE channel_id = {row[1]}').fetchone()
+                invitedrow = cursor.execute(f'SELECT * FROM InvitedVC WHERE channel_id = {row[1]}').fetchone()
+
+                await ctx.guild.get_channel(row[1]).delete()
+
+                if mutedrow:
+                    cursor.execute(f'DELETE FROM MutedVC WHERE channel_id = {row[1]}')
+                    db.commit()
+                if bannedrow:
+                    cursor.execute(f'DELETE FROM BannedVC WHERE channel_id = {row[1]}')
+                    db.commit()
+                if invitedrow:
+                    cursor.execute(f'DELETE FROM InvitedVC WHERE channel_id = {row[1]}')
+                    db.commit()
+                cursor.execute(f'DELETE FROM CustomVCs WHERE user_id = {ctx.message.author.id}')
+                db.commit()
+                await ctx.message.channel.send(
+                    embed=discord.Embed(description='<:SeekPng:705124992349896795> ' + ctx.message.author.mention + ' **This custom VC was successfully deleted.**'))
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **Channel with specified ID does not exist.**'))
+            cursor.close()
+            db.close()
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  **Invalid syntax. Please provide an id after the command. Example:** ***$forcedeletevc channelid***'))
+        await ctx.message.delete()
 
 def setup(client):
     client.add_cog(CustomVCs(client))

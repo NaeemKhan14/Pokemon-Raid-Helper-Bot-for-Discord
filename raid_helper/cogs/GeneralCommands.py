@@ -127,7 +127,6 @@ class GeneralCommands(commands.Cog, discord.Client):
                         try:
                             p1reply = await self.client.wait_for('message', timeout=60.0, check=check2)
                             p1replycontent = p1reply.content
-                            await p1reply.delete()
                             await p1msg.edit(
                                 embed=discord.Embed(description='You have selected `' + p1replycontent + '`.'))
 
@@ -140,7 +139,6 @@ class GeneralCommands(commands.Cog, discord.Client):
                             try:
                                 p2reply = await self.client.wait_for('message', timeout=60.0, check=check3)
                                 p2replycontent = p2reply.content
-                                await p2reply.delete()
                                 await p2msg.edit(
                                     embed=discord.Embed(description='You have selected `' + p2replycontent + '`.'))
 

@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 import asyncio
-import sqlite3
 
 class GeneralCommands(commands.Cog, discord.Client):
 
@@ -127,7 +126,7 @@ class GeneralCommands(commands.Cog, discord.Client):
 
                         try:
                             p1reply = await self.client.wait_for('message', timeout=60.0, check=check2)
-                            p1replycontent = p1reply.content
+                            p1replycontent = str.lower(p1reply.content)
                             await p1msg.edit(
                                 embed=discord.Embed(description='You have selected `' + p1replycontent + '`.'))
 
@@ -139,7 +138,7 @@ class GeneralCommands(commands.Cog, discord.Client):
                                         msg.content) == 'paper' or str.lower(msg.content) == 'scissors')
                             try:
                                 p2reply = await self.client.wait_for('message', timeout=60.0, check=check3)
-                                p2replycontent = p2reply.content
+                                p2replycontent = str.lower(p2reply.content)
                                 await p2msg.edit(
                                     embed=discord.Embed(description='You have selected `' + p2replycontent + '`.'))
 

@@ -316,7 +316,7 @@ class CustomVCs(commands.Cog, discord.Client):
                 if invitedrow:
                     cursor.execute(f'DELETE FROM InvitedVC WHERE channel_id = {row[1]}')
                     db.commit()
-                cursor.execute(f'DELETE FROM CustomVCs WHERE user_id = {ctx.message.author.id}')
+                cursor.execute(f'DELETE FROM CustomVCs WHERE channel_id = {row[1]}')
                 db.commit()
                 await ctx.message.channel.send(
                     embed=discord.Embed(description='<:SeekPng:705124992349896795> ' + ctx.message.author.mention + ' **This custom VC was successfully deleted.**'))
@@ -329,6 +329,13 @@ class CustomVCs(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide an id after the command. Example:** ***$forcedeletevc channelid***'))
         await ctx.message.delete()
+
+    @commands.command()
+    async def clearallvcdb(self, ctx, userid = ''):
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f'DELETE FROM CustomVCs WHERE user_id = {userid}')
+        db.commit()
 
 def setup(client):
     client.add_cog(CustomVCs(client))

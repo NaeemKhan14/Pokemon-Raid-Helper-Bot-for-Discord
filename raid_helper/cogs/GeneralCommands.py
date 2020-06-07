@@ -10,6 +10,7 @@ class GeneralCommands(commands.Cog, discord.Client):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await self.client.change_presence(activity=discord.Game('discord.gg/cool | $help'))
         print('GeneralCommands cog is loaded.')
 
 
@@ -143,55 +144,55 @@ class GeneralCommands(commands.Cog, discord.Client):
                                     embed=discord.Embed(description='You have selected `' + p2replycontent + '`.'))
 
                                 if p1replycontent == p2replycontent:
-                                    await ctx.message.channel.send(embed=discord.Embed(
-                                        description='Both players sent out `'+ p2replycontent + '` resulting in a tie. \n **Scores:** \n' + p1.mention + ' - **' + str(p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    await message1.edit(embed=discord.Embed(
+                                        description='Both players sent out `' + p2replycontent + '` resulting in a tie. \n **Scores:** \n' + p1.mention + ' - **' + str(p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
                                 elif p1replycontent == 'rock' and p2replycontent == 'paper':
                                     p2score += 1
-                                    await ctx.message.channel.send(embed=discord.Embed(
+                                    await message1.edit(embed=discord.Embed(
                                         description=p1.mention + ' sent out rock and ' + p2.mention + ' sent out paper. **Paper wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
                                             p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
                                 elif p1replycontent == 'rock' and p2replycontent == 'scissors':
                                     p1score += 1
-                                    await ctx.message.channel.send(embed=discord.Embed(
+                                    await message1.edit(embed=discord.Embed(
                                         description=p1.mention + ' sent out rock and ' + p2.mention + ' sent out scissors. **Rock wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
                                             p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
                                 elif p1replycontent == 'paper' and p2replycontent == 'scissors':
                                     p2score += 1
-                                    await ctx.message.channel.send(embed=discord.Embed(
+                                    await message1.edit(embed=discord.Embed(
                                         description=p1.mention + ' sent out paper and ' + p2.mention + ' sent out scissors. **Scissors wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
                                             p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
                                 elif p1replycontent == 'paper' and p2replycontent == 'rock':
                                     p1score += 1
-                                    await ctx.message.channel.send(embed=discord.Embed(
+                                    await message1.edit(embed=discord.Embed(
                                         description=p1.mention + ' sent out paper and ' + p2.mention + ' sent out rock. **Paper wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
                                             p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
                                 elif p1replycontent == 'scissors' and p2replycontent == 'paper':
                                     p1score += 1
-                                    await ctx.message.channel.send(embed=discord.Embed(
+                                    await message1.edit(embed=discord.Embed(
                                         description=p1.mention + ' sent out scissors and ' + p2.mention + ' sent out paper. **Scissors wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
                                             p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
                                 elif p1replycontent == 'scissors' and p2replycontent == 'rock':
                                     p2score += 1
-                                    await ctx.message.channel.send(embed=discord.Embed(
+                                    await message1.edit(embed=discord.Embed(
                                         description=p1.mention + ' sent out scissors and ' + p2.mention + ' sent out rock. **Rock wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
                                             p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
 
                             except asyncio.TimeoutError:
-                                await ctx.message.channel.send(embed=discord.Embed(description=p2.mention + ' has not responded within one minute. ' + p1.mention + ' **has won the RPS game.**'))
+                                await message1.edit(embed=discord.Embed(description=p2.mention + ' has not responded within one minute. ' + p1.mention + ' **has won the RPS game.**'))
                                 await p2msg.edit(embed=discord.Embed(description='You have lost because you did not respond in time.'))
                                 p1score = 2
 
                         except asyncio.TimeoutError:
-                            await ctx.message.channel.send(embed=discord.Embed(description=p1.mention + ' has not responded within one minute. ' + p2.mention + ' **has won the RPS game.**'))
+                            await message1.edit(embed=discord.Embed(description=p1.mention + ' has not responded within one minute. ' + p2.mention + ' **has won the RPS game.**'))
                             await p1msg.edit(embed=discord.Embed(description='You have lost because you did not respond in time.'))
                             p2score = 2
                     if p1score == 2:
-                        await ctx.message.channel.send(embed=discord.Embed(
+                        await message1.edit(embed=discord.Embed(
                             description=p1.mention + ' has **won** the RPS game with a score of ' + str(p1score) + '-' + str(p2score)))
                     if p2score == 2:
-                        await ctx.message.channel.send(embed=discord.Embed(
-                            description=p2.mention + ' has **won** the RPS game with a score of ' + str(
-                                p2score) + '-' + str(p1score)))
+                        await message1.edit(embed=discord.Embed(
+                            description=p2.mention + ' has **won** the RPS game with a score of **' + str(
+                                p2score) + '-' + str(p1score) + '**'))
 
                 else:
                     await message1.edit(embed=discord.Embed(

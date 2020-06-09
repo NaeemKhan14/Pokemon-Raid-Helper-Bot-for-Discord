@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
+import sqlite3
 
 class GeneralCommands(commands.Cog, discord.Client):
 
@@ -10,6 +11,19 @@ class GeneralCommands(commands.Cog, discord.Client):
     @commands.Cog.listener()
     async def on_ready(self):
         await self.client.change_presence(activity=discord.Game('discord.gg/cool | $help'))
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS Clown
+            (
+                user_id	INTEGER NOT NULL,
+                number INTEGER,
+                PRIMARY KEY(user_id)
+            )
+            ''')
+        cursor.close()
+        db.close()
         print('GeneralCommands cog is loaded.')
 
 
@@ -101,109 +115,155 @@ class GeneralCommands(commands.Cog, discord.Client):
     @commands.command()
     async def rps(self, ctx, member: discord.Member = ''):
         if member:
-            message1 = await ctx.message.channel.send(embed=discord.Embed(
-                description=member.mention + ', you have been challenged to a best of 3 game of RPS by ' + ctx.message.author.mention + '. To accept this challenge, type `accept` in the next minute, or type `reject` to reject this challenge.').set_image(url='https://cdn.discordapp.com/attachments/704174855813070901/717464068688052254/cartoon-rock-paper-scissors-vector-characters.png'))
+            if member != ctx.message.author:
+                message1 = await ctx.message.channel.send(embed=discord.Embed(
+                    description=member.mention + ', you have been challenged to a best of 3 game of RPS by ' + ctx.message.author.mention + '. To accept this challenge, type `accept` in the next minute, or type `reject` to reject this challenge.').set_image(url='https://cdn.discordapp.com/attachments/704174855813070901/717464068688052254/cartoon-rock-paper-scissors-vector-characters.png'))
 
-            def check(msg):
-                return ctx.message.channel == msg.channel and member == msg.author and (str.lower(msg.content) == 'accept' or str.lower(msg.content) == 'reject')
+                def check(msg):
+                    return ctx.message.channel == msg.channel and member == msg.author and (str.lower(msg.content) == 'accept' or str.lower(msg.content) == 'reject')
 
-            try:
-                reply = await self.client.wait_for('message', timeout=60.0, check=check)
-                if reply.content == 'accept':
-                    await message1.edit(embed=discord.Embed(
-                        description='The challenge has been **accepted**. Check your DMs for instructions.'))
-                    await reply.delete()
-                    p1score = 0
-                    p2score = 0
-                    p1 = self.client.get_user(member.id)
-                    p2 = self.client.get_user(ctx.message.author.id)
+                try:
+                    reply = await self.client.wait_for('message', timeout=60.0, check=check)
+                    if reply.content == 'accept':
+                        await message1.edit(embed=discord.Embed(
+                            description='The challenge has been **accepted**. Check your DMs for instructions.'))
+                        await reply.delete()
+                        p1score = 0
+                        p2score = 0
+                        p1 = self.client.get_user(member.id)
+                        p2 = self.client.get_user(ctx.message.author.id)
 
-                    while (p1score != 2 and p2score != 2):
-                        p1msg = await p1.send(embed=discord.Embed(description='You have **one minute** to reply with your choice of `rock`, `paper`, or `scissors`.'))
+                        while (p1score != 2 and p2score != 2):
+                            p1msg = await p1.send(embed=discord.Embed(description='You have **one minute** to reply with your choice of `rock`, `paper`, or `scissors`.'))
 
-                        def check2(msg):
-                            return p1msg.channel == msg.channel and p1 == msg.author and (str.lower(msg.content) == 'rock' or str.lower(msg.content) == 'paper' or str.lower(msg.content) == 'scissors')
+                            def check2(msg):
+                                return p1msg.channel == msg.channel and p1 == msg.author and (str.lower(msg.content) == 'rock' or str.lower(msg.content) == 'paper' or str.lower(msg.content) == 'scissors')
 
-                        try:
-                            p1reply = await self.client.wait_for('message', timeout=60.0, check=check2)
-                            p1replycontent = str.lower(p1reply.content)
-                            await p1msg.edit(
-                                embed=discord.Embed(description='You have selected `' + p1replycontent + '`.'))
-
-                            p2msg = await p2.send(embed=discord.Embed(
-                                description='You have **one minute** to reply with your choice of `rock`, `paper`, or `scissors`.'))
-                            def check3(msg):
-                                return p2msg.channel == msg.channel and p2 == msg.author and (
-                                            str.lower(msg.content) == 'rock' or str.lower(
-                                        msg.content) == 'paper' or str.lower(msg.content) == 'scissors')
                             try:
-                                p2reply = await self.client.wait_for('message', timeout=60.0, check=check3)
-                                p2replycontent = str.lower(p2reply.content)
-                                await p2msg.edit(
-                                    embed=discord.Embed(description='You have selected `' + p2replycontent + '`.'))
+                                p1reply = await self.client.wait_for('message', timeout=60.0, check=check2)
+                                p1replycontent = str.lower(p1reply.content)
+                                await p1msg.edit(
+                                    embed=discord.Embed(description='You have selected `' + p1replycontent + '`.'))
 
-                                if p1replycontent == p2replycontent:
-                                    await message1.edit(embed=discord.Embed(
-                                        description='Both players sent out `' + p2replycontent + '` resulting in a tie. \n **Scores:** \n' + p1.mention + ' - **' + str(p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
-                                elif p1replycontent == 'rock' and p2replycontent == 'paper':
-                                    p2score += 1
-                                    await message1.edit(embed=discord.Embed(
-                                        description=p1.mention + ' sent out rock and ' + p2.mention + ' sent out paper. **Paper wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
-                                            p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
-                                elif p1replycontent == 'rock' and p2replycontent == 'scissors':
-                                    p1score += 1
-                                    await message1.edit(embed=discord.Embed(
-                                        description=p1.mention + ' sent out rock and ' + p2.mention + ' sent out scissors. **Rock wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
-                                            p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
-                                elif p1replycontent == 'paper' and p2replycontent == 'scissors':
-                                    p2score += 1
-                                    await message1.edit(embed=discord.Embed(
-                                        description=p1.mention + ' sent out paper and ' + p2.mention + ' sent out scissors. **Scissors wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
-                                            p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
-                                elif p1replycontent == 'paper' and p2replycontent == 'rock':
-                                    p1score += 1
-                                    await message1.edit(embed=discord.Embed(
-                                        description=p1.mention + ' sent out paper and ' + p2.mention + ' sent out rock. **Paper wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
-                                            p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
-                                elif p1replycontent == 'scissors' and p2replycontent == 'paper':
-                                    p1score += 1
-                                    await message1.edit(embed=discord.Embed(
-                                        description=p1.mention + ' sent out scissors and ' + p2.mention + ' sent out paper. **Scissors wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
-                                            p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
-                                elif p1replycontent == 'scissors' and p2replycontent == 'rock':
-                                    p2score += 1
-                                    await message1.edit(embed=discord.Embed(
-                                        description=p1.mention + ' sent out scissors and ' + p2.mention + ' sent out rock. **Rock wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
-                                            p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                p2msg = await p2.send(embed=discord.Embed(
+                                    description='You have **one minute** to reply with your choice of `rock`, `paper`, or `scissors`.'))
+                                def check3(msg):
+                                    return p2msg.channel == msg.channel and p2 == msg.author and (
+                                                str.lower(msg.content) == 'rock' or str.lower(
+                                            msg.content) == 'paper' or str.lower(msg.content) == 'scissors')
+                                try:
+                                    p2reply = await self.client.wait_for('message', timeout=60.0, check=check3)
+                                    p2replycontent = str.lower(p2reply.content)
+                                    await p2msg.edit(
+                                        embed=discord.Embed(description='You have selected `' + p2replycontent + '`.'))
+
+                                    if p1replycontent == p2replycontent:
+                                        await message1.edit(embed=discord.Embed(
+                                            description='Both players sent out `' + p2replycontent + '` resulting in a tie. \n **Scores:** \n' + p1.mention + ' - **' + str(p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    elif p1replycontent == 'rock' and p2replycontent == 'paper':
+                                        p2score += 1
+                                        await message1.edit(embed=discord.Embed(
+                                            description=p1.mention + ' sent out rock and ' + p2.mention + ' sent out paper. **Paper wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
+                                                p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    elif p1replycontent == 'rock' and p2replycontent == 'scissors':
+                                        p1score += 1
+                                        await message1.edit(embed=discord.Embed(
+                                            description=p1.mention + ' sent out rock and ' + p2.mention + ' sent out scissors. **Rock wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
+                                                p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    elif p1replycontent == 'paper' and p2replycontent == 'scissors':
+                                        p2score += 1
+                                        await message1.edit(embed=discord.Embed(
+                                            description=p1.mention + ' sent out paper and ' + p2.mention + ' sent out scissors. **Scissors wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
+                                                p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    elif p1replycontent == 'paper' and p2replycontent == 'rock':
+                                        p1score += 1
+                                        await message1.edit(embed=discord.Embed(
+                                            description=p1.mention + ' sent out paper and ' + p2.mention + ' sent out rock. **Paper wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
+                                                p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    elif p1replycontent == 'scissors' and p2replycontent == 'paper':
+                                        p1score += 1
+                                        await message1.edit(embed=discord.Embed(
+                                            description=p1.mention + ' sent out scissors and ' + p2.mention + ' sent out paper. **Scissors wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
+                                                p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+                                    elif p1replycontent == 'scissors' and p2replycontent == 'rock':
+                                        p2score += 1
+                                        await message1.edit(embed=discord.Embed(
+                                            description=p1.mention + ' sent out scissors and ' + p2.mention + ' sent out rock. **Rock wins!** \n **Scores:** \n' + p1.mention + ' - **' + str(
+                                                p1score) + '** \n' + p2.mention + ' - **' + str(p2score) + '**'))
+
+                                except asyncio.TimeoutError:
+                                    await message1.edit(embed=discord.Embed(description=p2.mention + ' has not responded within one minute. ' + p1.mention + ' **has won the RPS game.**'))
+                                    await p2msg.edit(embed=discord.Embed(description='You have lost because you did not respond in time.'))
+                                    p1score = 2
 
                             except asyncio.TimeoutError:
-                                await message1.edit(embed=discord.Embed(description=p2.mention + ' has not responded within one minute. ' + p1.mention + ' **has won the RPS game.**'))
-                                await p2msg.edit(embed=discord.Embed(description='You have lost because you did not respond in time.'))
-                                p1score = 2
+                                await message1.edit(embed=discord.Embed(description=p1.mention + ' has not responded within one minute. ' + p2.mention + ' **has won the RPS game.**'))
+                                await p1msg.edit(embed=discord.Embed(description='You have lost because you did not respond in time.'))
+                                p2score = 2
+                        if p1score == 2:
+                            await message1.edit(embed=discord.Embed(
+                                description=p1.mention + ' has **won** the RPS game with a score of ' + str(p1score) + '-' + str(p2score)))
+                        if p2score == 2:
+                            await message1.edit(embed=discord.Embed(
+                                description=p2.mention + ' has **won** the RPS game with a score of **' + str(
+                                    p2score) + '-' + str(p1score) + '**'))
 
-                        except asyncio.TimeoutError:
-                            await message1.edit(embed=discord.Embed(description=p1.mention + ' has not responded within one minute. ' + p2.mention + ' **has won the RPS game.**'))
-                            await p1msg.edit(embed=discord.Embed(description='You have lost because you did not respond in time.'))
-                            p2score = 2
-                    if p1score == 2:
+                    else:
                         await message1.edit(embed=discord.Embed(
-                            description=p1.mention + ' has **won** the RPS game with a score of ' + str(p1score) + '-' + str(p2score)))
-                    if p2score == 2:
-                        await message1.edit(embed=discord.Embed(
-                            description=p2.mention + ' has **won** the RPS game with a score of **' + str(
-                                p2score) + '-' + str(p1score) + '**'))
+                            description='The challenge has been **rejected**.'))
+                        await reply.delete()
 
-                else:
-                    await message1.edit(embed=discord.Embed(
-                        description='The challenge has been **rejected**.'))
-                    await reply.delete()
-
-            except asyncio.TimeoutError:
-                await message1.edit(embed=discord.Embed(description=member.mention + ' has not responded within one minute. **The challenge has expired.**'))
-
+                except asyncio.TimeoutError:
+                    await message1.edit(embed=discord.Embed(description=member.mention + ' has not responded within one minute. **The challenge has expired.**'))
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **You cannot challenge yourself**'))
         else:
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to challenge after the command. Example:** ***$rps @user***'))
+
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        if cursor.execute(f'SELECT * FROM Clown WHERE user_id = {message.author.id}').fetchone():
+            row = cursor.execute(f'SELECT * FROM Clown WHERE user_id = {message.author.id}').fetchone()
+            if row[1] > 0:
+                await message.add_reaction('🤡')
+                # await message.add_reaction('<:clownoftheyear:689910124806013090>')
+                time = row[1] - 1
+                cursor.execute(
+                    f'UPDATE Clown SET number = {time} WHERE user_id = {row[0]}')
+                db.commit()
+            else:
+                cursor.execute(f'DELETE FROM Clown WHERE user_id = {row[0]}')
+                db.commit()
+            cursor.close()
+            db.close()
+
+    @commands.command()
+    @commands.has_role('Owner')
+    async def clown(self, ctx, member: discord.Member = '', time: int = 0):
+        if member:
+            if time > 0:
+                db = sqlite3.connect('RaidHelper.sqlite')
+                cursor = db.cursor()
+                cursor.execute(
+                    """INSERT INTO Clown (user_id, number) VALUES (?, ?)""",
+                    (member.id, time))
+                db.commit()
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:SeekPng:705124992349896795> User will be clowned on their next **' + str(time) + '** messages.'))
+                cursor.close()
+                db.close()
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **Invalid syntax. Please provide the # of msgs to clown after the user. Example:** ***$clown @user time***'))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to clown after the command. Example:** ***$clown @user***'))
+        await ctx.message.delete()
 
 
 def setup(client):

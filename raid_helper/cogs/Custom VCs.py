@@ -295,6 +295,7 @@ class CustomVCs(commands.Cog, discord.Client):
 
     # Force delete a custom vc
     @commands.command()
+    @commands.has_role('Owner')
     async def forcedeletevc(self, ctx, channelid = ''):
         if channelid:
             db = sqlite3.connect('RaidHelper.sqlite')
@@ -330,12 +331,6 @@ class CustomVCs(commands.Cog, discord.Client):
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide an id after the command. Example:** ***$forcedeletevc channelid***'))
         await ctx.message.delete()
 
-    @commands.command()
-    async def clearallvcdb(self, ctx, userid = ''):
-        db = sqlite3.connect('RaidHelper.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f'DELETE FROM CustomVCs WHERE user_id = {userid}')
-        db.commit()
 
 def setup(client):
     client.add_cog(CustomVCs(client))

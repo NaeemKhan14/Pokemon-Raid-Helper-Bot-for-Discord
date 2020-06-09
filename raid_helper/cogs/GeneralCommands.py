@@ -232,13 +232,8 @@ class GeneralCommands(commands.Cog, discord.Client):
             if row[1] > 0:
                 await message.add_reaction('🤡')
                 await message.add_reaction('<:clownoftheyear:689910124806013090>')
-                await message.add_reaction('<:clowned:719999648713932890>')
-                await message.add_reaction('<:clownpensive:681631689574842465>')
-                await message.add_reaction('<:clownsmirk:720000481346191420>')
-                await message.add_reaction('<:awkclown:720000437855715368>')
                 await message.add_reaction('<:cuteclown:720000248574902383>')
-                await message.add_reaction('<:honkerclown:719999428039147946>')
-                await message.add_reaction('<:clowndab:720000849094639776>')
+
                 time = row[1] - 1
                 cursor.execute(
                     f'UPDATE Clown SET number = {time} WHERE user_id = {row[0]}')

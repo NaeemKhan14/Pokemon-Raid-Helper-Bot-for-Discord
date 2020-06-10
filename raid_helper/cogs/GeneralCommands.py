@@ -284,7 +284,7 @@ class GeneralCommands(commands.Cog, discord.Client):
                     await pingchannel.set_permissions(pingrole, read_messages=True, send_messages=False)
                     await pingchannel.send(content=member.mention)
                     time -= 1
-                await asyncio.sleep(10)
+                await asyncio.sleep(300)
                 for channels in category.channels:
                     await channels.delete()
                 await category.delete()

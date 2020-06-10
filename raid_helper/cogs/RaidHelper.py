@@ -447,20 +447,22 @@ class RaidHelper(commands.Cog, discord.Client):
             muted_users_row = cursor.execute(
                 f'SELECT * FROM MutedUsers WHERE user_id = {member.id} AND channel_id = {ctx.message.channel.id}').fetchone()
 
-            if ctx.author == member:
-                await channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751>  **You cannot mute yourself**'))
 
             # Check if user is already muted or not
             if not muted_users_row:
-                await channel.set_permissions(member, send_messages=False)
-                await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795>  **Darkrai used Disable.** ' + member.mention +
-                                " ***no longer has permission to speak.***"))
-                cursor.execute(
-                    """INSERT INTO MutedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
-                    (member.id, member.display_name, ctx.message.channel.id, ctx.message.channel.name))
-                db.commit()
+                if ctx.author == member:
+                    await channel.send(embed=discord.Embed(
+                        description='<:x_:705214517961031751>  **You cannot mute yourself**'))
+                else:
+                    if member.permissions_in(channel).read_messages:
+                        await channel.set_permissions(member, send_messages=False, read_messages=True)
+                        await channel.send(embed=discord.Embed(
+                            description='<:SeekPng:705124992349896795>  **Darkrai used Disable.** ' + member.mention +
+                                        " ***no longer has permission to speak.***"))
+                        cursor.execute(
+                            """INSERT INTO MutedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
+                            (member.id, member.display_name, ctx.message.channel.id, ctx.message.channel.name))
+                        db.commit()
             else:  # If user is already muted
                 await channel.send(embed=discord.Embed(
                     description='<:x_:705214517961031751>  **Darkrai used Disable.** ' + member.mention
@@ -489,7 +491,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 f'SELECT * FROM MutedUsers WHERE user_id = {member.id} AND channel_id = {ctx.message.channel.id}').fetchone()
             # Check if user is already muted or not
             if muted_users_row:
-                await channel.set_permissions(member, send_messages=True)
+                await channel.set_permissions(member, send_messages=True, read_messages=True)
                 await channel.send(embed=discord.Embed(
                     description='<:SeekPng:705124992349896795>  **Disable has worn off for** ' + member.mention +
                                 " ***and they are now able to speak.***"))
@@ -522,20 +524,21 @@ class RaidHelper(commands.Cog, discord.Client):
             banned_users_row = cursor.execute(
                 f'SELECT * FROM BannedUsers WHERE user_id = {member.id} AND channel_id = {ctx.message.channel.id}').fetchone()
 
-            if ctx.author == member:
-                await channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751>  **You cannot ban yourself**'))
-
             # Check if user is already banned or not
             if not banned_users_row:
-                await channel.set_permissions(member, read_messages=False)
-                await channel.send(embed=discord.Embed(
-                    description='<:SeekPng:705124992349896795>  **Darkrai used Dark Void. <:blackhole:705225042052644915>** ' +
-                                member.mention + " ***has been banished to the void.***"))
-                cursor.execute(
-                    """INSERT INTO BannedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
-                    (member.id, member.display_name, ctx.message.channel.id, ctx.message.channel.name))
-                db.commit()
+                if ctx.author == member:
+                    await channel.send(embed=discord.Embed(
+                        description='<:x_:705214517961031751>  **You cannot ban yourself**'))
+                else:
+                    if member.permissions_in(channel).read_messages:
+                        await channel.set_permissions(member, read_messages=False)
+                        await channel.send(embed=discord.Embed(
+                            description='<:SeekPng:705124992349896795>  **Darkrai used Dark Void. <:blackhole:705225042052644915>** ' +
+                                        member.mention + " ***has been banished to the void.***"))
+                        cursor.execute(
+                            """INSERT INTO BannedUsers (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
+                            (member.id, member.display_name, ctx.message.channel.id, ctx.message.channel.name))
+                        db.commit()
             if banned_users_row:
                 await channel.send(embed=discord.Embed(
                     description='<:x_:705214517961031751>  **Player is already banished.**'))
@@ -818,7 +821,6 @@ class RaidHelper(commands.Cog, discord.Client):
     @commands.command()
     @commands.has_role('Owner')
     async def clearnoraidmsg(self, ctx):
-
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         row = cursor.execute(f'SELECT * FROM NotHosting').fetchone()

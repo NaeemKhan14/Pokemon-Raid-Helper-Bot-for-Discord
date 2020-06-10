@@ -108,6 +108,7 @@ class GeneralCommands(commands.Cog, discord.Client):
         helpembed.add_field(name='Games', value='`$hangman`, `$rps`', inline=False)
         helpembed.add_field(name='Chess', value='`$chessplay`, `$move`, `$status`, `$offer`, `$accept`, `$concede`, `$games`, `$elo`, `$chessleaderboard`', inline=False)
         helpembed.add_field(name='Music', value='`$play`, `$skip`, `$queue`, `$join`, `$summon`, `$leave`, `$volume`, `$np`, `$pause`, `$resume`, `$stop`, `$shuffle`, `$loop`', inline=False)
+        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`', inline=False)
         await ctx.message.channel.send(embed=helpembed)
 
 
@@ -261,10 +262,39 @@ class GeneralCommands(commands.Cog, discord.Client):
                 db.close()
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
-                    description='<:x_:705214517961031751>  **Invalid syntax. Please provide the # of msgs to clown after the user. Example:** ***$clown @user time***'))
+                    description='<:x_:705214517961031751>  **Invalid syntax. Please provide the # of msgs to clown after the user. Example:** ***$clown @user #***'))
         else:
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to clown after the command. Example:** ***$clown @user***'))
+        await ctx.message.delete()
+
+    @commands.command()
+    @commands.has_role('Owner')
+    async def torture(self, ctx, member: discord.Member = '', time: int = 0):
+        if member:
+            if time > 0:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description=member.mention + ' will be pinged ' + str(time) + ' times.'))
+                category = await ctx.message.guild.create_category(name='Pings')
+                pingrole = await ctx.message.guild.create_role(name='Ping Torture')
+                await member.add_roles(pingrole)
+                while time > 0:
+                    pingchannel = await ctx.message.guild.create_text_channel(name='Pings', category=category)
+                    await pingchannel.set_permissions(discord.utils.get(ctx.message.guild.roles, name='Member'), read_messages=False)
+                    await pingchannel.set_permissions(pingrole, read_messages=True, send_messages=False)
+                    await pingchannel.send(content=member.mention)
+                    time -= 1
+                await asyncio.sleep(10)
+                for channels in category.channels:
+                    await channels.delete()
+                await category.delete()
+                await pingrole.delete()
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **Invalid syntax. Please provide the # of pings to torture the user with. Example:** ***$torture @user #***'))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to torture after the command. Example:** ***$torture @user***'))
         await ctx.message.delete()
 
 

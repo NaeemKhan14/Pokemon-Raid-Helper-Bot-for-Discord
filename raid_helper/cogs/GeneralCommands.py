@@ -108,6 +108,7 @@ class GeneralCommands(commands.Cog, discord.Client):
         helpembed.add_field(name='Games', value='`$hangman`, `$rps`', inline=False)
         helpembed.add_field(name='Chess', value='`$chessplay`, `$move`, `$status`, `$offer`, `$accept`, `$concede`, `$games`, `$elo`, `$chessleaderboard`', inline=False)
         helpembed.add_field(name='Music', value='`$play`, `$skip`, `$queue`, `$join`, `$summon`, `$leave`, `$volume`, `$np`, `$pause`, `$resume`, `$stop`, `$shuffle`, `$loop`', inline=False)
+        helpembed.add_field(name='Staff', value='`$giverole`', inline=False)
         helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`', inline=False)
         await ctx.message.channel.send(embed=helpembed)
 
@@ -271,6 +272,7 @@ class GeneralCommands(commands.Cog, discord.Client):
     @commands.command()
     @commands.has_role('Owner')
     async def torture(self, ctx, member: discord.Member = '', time: int = 0):
+        await ctx.message.delete()
         if member:
             if time > 0:
                 await ctx.message.channel.send(embed=discord.Embed(
@@ -295,8 +297,26 @@ class GeneralCommands(commands.Cog, discord.Client):
         else:
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to torture after the command. Example:** ***$torture @user***'))
-        await ctx.message.delete()
 
+    @commands.command()
+    @commands.has_any_role('Owner', 'Admin', 'Mod')
+    async def giverole(self, ctx, member: discord.Member = '', role=''):
+        if member and role:
+            if str.lower(role) == 'host':
+                await member.add_roles(discord.utils.get(ctx.message.guild.roles, name='Shiny Raid Host'))
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:SeekPng:705124992349896795>  You have successfully given ' + member.mention + ' the **Shiny Raid Host** role.'))
+            elif str.lower(role) == 'giveaways':
+                await member.add_roles(discord.utils.get(ctx.message.guild.roles, name='Giveaways'))
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:SeekPng:705124992349896795>  You have successfully given ' + member.mention + ' the **Giveaways** role.'))
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751>  **Role not found.** \n *List of available roles:* **Host** and **Giveaways**'))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  **Invalid syntax.** Please provide a **user** and **role** to give after the command. \n *Example:* **$giverole @user role** \n *List of available roles:* **Host** and **Giveaways**'))
+        await ctx.message.delete()
 
 def setup(client):
     client.add_cog(GeneralCommands(client))

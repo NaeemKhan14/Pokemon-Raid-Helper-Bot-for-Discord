@@ -224,7 +224,7 @@ class GeneralCommands(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to challenge after the command. Example:** ***$rps @user***'))
 
-
+    # Clown msg if author is a clown
     @commands.Cog.listener()
     async def on_message(self, message):
         db = sqlite3.connect('RaidHelper.sqlite')
@@ -246,6 +246,7 @@ class GeneralCommands(commands.Cog, discord.Client):
             cursor.close()
             db.close()
 
+    # Clown command
     @commands.command()
     @commands.has_role('Owner')
     async def clown(self, ctx, member: discord.Member = '', time: int = 0):
@@ -269,6 +270,7 @@ class GeneralCommands(commands.Cog, discord.Client):
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to clown after the command. Example:** ***$clown @user***'))
         await ctx.message.delete()
 
+    # Ping torture
     @commands.command()
     @commands.has_role('Owner')
     async def torture(self, ctx, member: discord.Member = '', time: int = 0):
@@ -298,6 +300,7 @@ class GeneralCommands(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax. Please provide a user to torture after the command. Example:** ***$torture @user***'))
 
+    # Allow staff to give roles
     @commands.command()
     @commands.has_any_role('Owner', 'Admin', 'Mod')
     async def giverole(self, ctx, member: discord.Member = '', role=''):
@@ -317,6 +320,17 @@ class GeneralCommands(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  **Invalid syntax.** Please provide a **user** and **role** to give after the command. \n *Example:* **$giverole @user role** \n *List of available roles:* **Host** and **Giveaways**'))
         await ctx.message.delete()
+
+    # Verify new players
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.channel == discord.utils.get(self.client.get_all_channels(), name='verify'):
+            if message.content == 'I agree':
+                await message.author.add_roles(discord.utils.get(message.guild.roles, name='Member'))
+            await message.delete()
+
+
+
 
 def setup(client):
     client.add_cog(GeneralCommands(client))

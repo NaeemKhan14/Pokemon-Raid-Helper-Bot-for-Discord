@@ -811,15 +811,15 @@ class RaidHelper(commands.Cog, discord.Client):
 
             try:
                 reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check)
-                await leaderboardmsg.edit(embed=leaderboardembed2)
                 await leaderboardmsg.remove_reaction('🔽', user)
                 await leaderboardmsg.remove_reaction('🔽', leaderboardmsg.author)
+                await leaderboardmsg.edit(embed=leaderboardembed2)
                 await leaderboardmsg.add_reaction('🔼')
                 try:
                     reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check2)
-                    await leaderboardmsg.edit(embed=leaderboardembed)
                     await leaderboardmsg.remove_reaction('🔼', user)
                     await leaderboardmsg.remove_reaction('🔼', leaderboardmsg.author)
+                    await leaderboardmsg.edit(embed=leaderboardembed)
                 except asyncio.TimeoutError:
                     active = False
 

@@ -103,13 +103,13 @@ class GeneralCommands(commands.Cog, discord.Client):
         helpembed.set_author(name='Darkrai Commands', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         helpembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         helpembed.add_field(name='General', value='`$help`, `$ping`', inline=False)
-        helpembed.add_field(name='Shiny Raids', value='`$create`, `$delete`, `$hours`, `$leaderboard`, `$mute`, `$unmute`, `$ban`, `$unban`, `$addhours`, `$subtracthours`, `$cleardb`, `$forcedelete`', inline=False)
-        helpembed.add_field(name='Custom VCs', value='`$createvc`, `$deletevc`, `$vcinvite`, `$vcmute`, `$vcunmute`, `$vcban`, `$vcunban`, `$forcedeletevc`', inline=False)
+        helpembed.add_field(name='Shiny Raids', value='`$create`, `$delete`, `$hours`, `$leaderboard`, `$mute`, `$unmute`, `$ban`, `$unban`, `$lock`', inline=False)
+        helpembed.add_field(name='Custom VCs', value='`$createvc`, `$deletevc`, `$vcinvite`, `$vcmute`, `$vcunmute`, `$vcban`, `$vcunban`', inline=False)
         helpembed.add_field(name='Games', value='`$hangman`, `$rps`', inline=False)
         helpembed.add_field(name='Chess', value='`$chessplay`, `$move`, `$status`, `$offer`, `$accept`, `$concede`, `$games`, `$elo`, `$chessleaderboard`', inline=False)
         helpembed.add_field(name='Music', value='`$play`, `$skip`, `$queue`, `$join`, `$summon`, `$leave`, `$volume`, `$np`, `$pause`, `$resume`, `$stop`, `$shuffle`, `$loop`', inline=False)
         helpembed.add_field(name='Staff', value='`$giverole`', inline=False)
-        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`', inline=False)
+        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`, `$addhours`, `$subtracthours`, `$cleardb`, `$forcedelete`, `$forcedeletevc`', inline=False)
         await ctx.message.channel.send(embed=helpembed)
 
 
@@ -337,11 +337,12 @@ class GeneralCommands(commands.Cog, discord.Client):
             '**\n\n After you have verified, make sure to read **' + discord.utils.get(self.client.get_all_channels(), name='server-info').mention +
             '** for a description of what channels are for.\n\n If you have any questions, read **' + discord.utils.get(self.client.get_all_channels(), name='faq').mention
             + '**\n\n Give yourself a role in **' + discord.utils.get(self.client.get_all_channels(), name='roles').mention +
-            '** to get notified for certain things happening in the server.\n\n If you have additional questions about the server that were not answered in **' + discord.utils.get(self.client.get_all_channels(), name='faq').mention + '** feel free to ask in **' + discord.utils.get(self.client.get_all_channels(), name='questions').mention + '** or DM a staff member.', color=0xf2e8bb)
+            '** to get notified for certain things happening in the server.\n\n If you have additional questions about the server that were not answered in **' + discord.utils.get(self.client.get_all_channels(), name='faq').mention + '** feel free to ask in **' + discord.utils.get(self.client.get_all_channels(), name='questions').mention + '** or DM a staff member.\n\n If you are ever banned and you believe it was unjustified you may appeal here: https://forms.gle/w1yhARVadckZMXPR6', color=0xf2e8bb)
         welcomeembed.set_thumbnail(url='https://cdn.discordapp.com/attachments/704174855813070901/721158854842384414/discordicon.gif')
         welcomeembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato',
                              icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         await member.send(embed=welcomeembed)
+
 
 
 

@@ -77,6 +77,13 @@ class RaidHelper(commands.Cog, discord.Client):
                 # Create a new channel based on category
                 category = discord.utils.get(ctx.guild.categories, name='✨ Pokemon ✨')
                 new_chan = await ctx.guild.create_text_channel(chan_name, category=category)
+
+                # Write user and channel info into DB for later use
+                cursor.execute(
+                    """INSERT INTO HostInfo (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
+                    (ctx.message.author.id, ctx.message.author.display_name, new_chan.id, new_chan.name))
+                db.commit()
+
                 # Set permissions for the user in this new channel
                 await new_chan.set_permissions(discord.utils.get(ctx.message.guild.roles, name='Member'),
                                                read_messages=False)
@@ -97,7 +104,10 @@ class RaidHelper(commands.Cog, discord.Client):
                                      inline=False)
                 help_embed.add_field(name="$ban @username", value="Removes the user from this channel.", inline=False)
                 help_embed.add_field(name="$unban @username",
-                                     value="Allows the user to join this channel again. Please note that you must provide the username along with the user discriminator. For example: $unban @User Name#9001.",
+                                     value="Allows the user to join this channel again.",
+                                     inline=False)
+                help_embed.add_field(name="$lock",
+                                     value="Locks the channel which blocks further users from joining. Keep in mind that you can't unlock it and hosting hours will not be tracked after.",
                                      inline=False)
                 help_embed.add_field(name="$delete",
                                      value="Removes this room permanently along with all the messages/users.",
@@ -105,11 +115,6 @@ class RaidHelper(commands.Cog, discord.Client):
                 help_embed.set_footer(text="Don't forget to delete this channel once you are finished hosting!")
                 # Sends help embed and pins it
                 await new_chan.send(embed=help_embed)
-                # Write user and channel info into DB for later use
-                cursor.execute(
-                    """INSERT INTO HostInfo (user_id, user_name, channel_id, channel_name) VALUES (?, ?, ?, ?)""",
-                    (ctx.message.author.id, ctx.message.author.display_name, new_chan.id, new_chan.name))
-                db.commit()
             else:
                 await ctx.message.channel.send(embed=discord.Embed(
                     description=
@@ -413,7 +418,7 @@ class RaidHelper(commands.Cog, discord.Client):
             db.commit()
 
             # See if anyone else is still hosting
-            checkhosting = db.execute("""SELECT * FROM HostInfo""").fetchone()
+            checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id != null""").fetchone()
             checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
             if checkhosting is None and checkmessage is None:
                 noraids = await shinyraidschannel.send(
@@ -634,7 +639,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
                 db.commit()
 
-                checkhosting = db.execute("""SELECT * FROM HostInfo""").fetchone()
+                checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id != null""").fetchone()
                 checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
                 if checkhosting is None and checkmessage is None:
                     noraids = await shinyraidschannel.send(
@@ -765,7 +770,61 @@ class RaidHelper(commands.Cog, discord.Client):
         leaderboardembed = discord.Embed(title='Leaderboard', description='**1. ' + self.client.get_user(row[0][0]).name + '** - **' + str(round(row[0][1], 2)) + '** hours hosted \n **2. ' + self.client.get_user(row[1][0]).name + '** - **' + str(round(row[1][1], 2)) + '** hours hosted \n **3. ' + self.client.get_user(row[2][0]).name + '** - **' + str(round(row[2][1], 2)) + '** hours hosted \n **4. ' + self.client.get_user(row[3][0]).name + '** - **' + str(round(row[3][1], 2)) + '** hours hosted \n **5. ' + self.client.get_user(row[4][0]).name + '** - **' + str(round(row[4][1], 2)) + '** hours hosted \n **6. ' + self.client.get_user(row[5][0]).name + '** - **' + str(round(row[5][1], 2)) + '** hours hosted \n **7. ' + self.client.get_user(row[6][0]).name + '** - **' + str(round(row[6][1], 2)) + '** hours hosted \n **8. ' + self.client.get_user(row[7][0]).name + '** - **' + str(round(row[7][1], 2)) + '** hours hosted \n **9. ' + self.client.get_user(row[8][0]).name + '** - **' + str(round(row[8][1], 2)) + '** hours hosted \n **10. ' + self.client.get_user(row[9][0]).name + '** - **' + str(round(row[9][1], 2)) + '** hours hosted \n')
         leaderboardembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         leaderboardembed.set_thumbnail(url='https://cdn.discordapp.com/attachments/704174855813070901/712734056885780553/2244140-200.png')
-        await ctx.message.channel.send(embed=leaderboardembed)
+        leaderboardmsg = await ctx.message.channel.send(embed=leaderboardembed)
+
+        leaderboardembed2 = discord.Embed(title='Leaderboard',
+                                         description='**11. ' + self.client.get_user(row[10][0]).name + '** - **' + str(
+                                             round(row[10][1], 2)) + '** hours hosted \n **12. ' + self.client.get_user(
+                                             row[11][0]).name + '** - **' + str(
+                                             round(row[11][1], 2)) + '** hours hosted \n **13. ' + self.client.get_user(
+                                             row[12][0]).name + '** - **' + str(
+                                             round(row[12][1], 2)) + '** hours hosted \n **14. ' + self.client.get_user(
+                                             row[13][0]).name + '** - **' + str(
+                                             round(row[13][1], 2)) + '** hours hosted \n **15. ' + self.client.get_user(
+                                             row[14][0]).name + '** - **' + str(
+                                             round(row[14][1], 2)) + '** hours hosted \n **16. ' + self.client.get_user(
+                                             row[15][0]).name + '** - **' + str(
+                                             round(row[15][1], 2)) + '** hours hosted \n **17. ' + self.client.get_user(
+                                             row[16][0]).name + '** - **' + str(
+                                             round(row[16][1], 2)) + '** hours hosted \n **18. ' + self.client.get_user(
+                                             row[17][0]).name + '** - **' + str(
+                                             round(row[17][1], 2)) + '** hours hosted \n **19. ' + self.client.get_user(
+                                             row[18][0]).name + '** - **' + str(
+                                             round(row[18][1], 2)) + '** hours hosted \n **20. ' + self.client.get_user(
+                                             row[19][0]).name + '** - **' + str(
+                                             round(row[19][1], 2)) + '** hours hosted \n')
+        leaderboardembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato',
+                                    icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
+        leaderboardembed.set_thumbnail(
+            url='https://cdn.discordapp.com/attachments/704174855813070901/712734056885780553/2244140-200.png')
+
+        def check(reaction, user):
+            return reaction.message.id == ctx.message.id and reaction.emoji == '🔽'
+
+        def check2(reaction, user):
+            return reaction.message.id == ctx.message.id and reaction.emoji == '🔼'
+
+        active = True
+
+        while active:
+            await leaderboardmsg.add_reaction('🔽')
+
+            try:
+                reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+                leaderboardmsg.edit(embed=leaderboardembed2)
+                await leaderboardmsg.remove_reaction('🔽', user)
+                await leaderboardmsg.remove_reaction('🔽', leaderboardmsg.author)
+                await leaderboardmsg.add_reaction('🔼')
+                try:
+                    reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+                    leaderboardmsg.edit(embed=leaderboardembed)
+                    await leaderboardmsg.remove_reaction('🔼', user)
+                    await leaderboardmsg.remove_reaction('🔼', leaderboardmsg.author)
+                except asyncio.TimeoutError:
+                    active = False
+
+            except asyncio.TimeoutError:
+                active = False
 
         cursor.close()
         db.close()
@@ -832,6 +891,59 @@ class RaidHelper(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(description='<:x_:705214517961031751> **Message ID does not exist in the database.**'))
         await ctx.message.delete()
 
+        cursor.close()
+        db.close()
+
+    # Lock your channel if you don't want anymore people joining
+    @commands.command()
+    @commands.has_role('Shiny Raid Host')
+    async def lock(self, ctx):
+        db = sqlite3.connect('RaidHelper.sqlite')
+        cursor = db.cursor()
+        row = cursor.execute(f'SELECT * FROM HostInfo WHERE user_id = {ctx.message.author.id} AND channel_id = {ctx.message.channel.id}').fetchone()
+        if row:
+            if row[4]:
+                shinyraidschannel = discord.utils.get(ctx.message.guild.text_channels, name='shiny-raids')
+                leaderboardsrow = cursor.execute(f'SELECT * FROM Leaderboards WHERE user_id = {row[0]}').fetchone()
+
+                hostmessage = await shinyraidschannel.fetch_message(row[4])
+                hosted_time = datetime.datetime.utcnow() - hostmessage.created_at
+                hostedtimeseconds = hosted_time.total_seconds()
+                hostedtimehours = hostedtimeseconds / 3600
+
+                if leaderboardsrow:
+                    hostedtimehours += leaderboardsrow[1]
+                    cursor.execute(f'UPDATE Leaderboards SET time_hosted = {hostedtimehours} WHERE user_id = {row[0]}')
+                    db.commit()
+
+                else:
+                    cursor.execute(
+                        """INSERT INTO Leaderboards (user_id, time_hosted) VALUES (?, ?)""",
+                        (ctx.message.author.id, hostedtimehours))
+                    db.commit()
+                cursor.execute(f'UPDATE HostInfo SET message_id = null WHERE user_id = {ctx.message.author.id}')
+                db.commit()
+                await hostmessage.delete()
+                await ctx.message.channel.send(embed=discord.Embed(
+                description='🔒 **Channel was successfully locked.**'))
+
+                checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id != null""").fetchone()
+                checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
+                if checkhosting is None and checkmessage is None:
+                    noraids = await shinyraidschannel.send(
+                        embed=discord.Embed(
+                            description="<:x_:705214517961031751>  **No raids are currently being hosted.**"))
+                    db.execute(
+                        """INSERT INTO NotHosting (message_id) VALUES (?)""",
+                        (noraids.id,))
+                    db.commit()
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751> **You may not lock your channel at this time.**'))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751> **You do not have a channel created or you are not in it.**'))
+        await ctx.message.delete()
         cursor.close()
         db.close()
 

@@ -793,16 +793,16 @@ class RaidHelper(commands.Cog, discord.Client):
                                              round(row[18][1], 2)) + '** hours hosted \n **20. ' + self.client.get_user(
                                              row[19][0]).name + '** - **' + str(
                                              round(row[19][1], 2)) + '** hours hosted \n')
-        leaderboardembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato',
+        leaderboardembed2.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato',
                                     icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
-        leaderboardembed.set_thumbnail(
+        leaderboardembed2.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/704174855813070901/712734056885780553/2244140-200.png')
 
         def check(reaction, user):
-            return reaction.message == leaderboardmsg and reaction.emoji == '🔽'
+            return reaction.message.id == leaderboardmsg.id and reaction.emoji == '🔽'
 
         def check2(reaction, user):
-            return reaction.message == leaderboardmsg and reaction.emoji == '🔼'
+            return reaction.message.id == leaderboardmsg.id and reaction.emoji == '🔼'
 
         active = True
 

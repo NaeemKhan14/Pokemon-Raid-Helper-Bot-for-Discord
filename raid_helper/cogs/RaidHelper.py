@@ -799,10 +799,10 @@ class RaidHelper(commands.Cog, discord.Client):
             url='https://cdn.discordapp.com/attachments/704174855813070901/712734056885780553/2244140-200.png')
 
         def check(reaction, user):
-            return reaction.message.id == ctx.message.id and reaction.emoji == '🔽'
+            return reaction.message == leaderboardmsg and reaction.emoji == '🔽'
 
         def check2(reaction, user):
-            return reaction.message.id == ctx.message.id and reaction.emoji == '🔼'
+            return reaction.message == leaderboardmsg and reaction.emoji == '🔼'
 
         active = True
 

@@ -46,7 +46,7 @@ class RaidHelper(commands.Cog, discord.Client):
             ''')
         cursor.execute("""CREATE TABLE IF NOT EXISTS MutedUsers AS SELECT * FROM HostInfo""")
         cursor.execute("""CREATE TABLE IF NOT EXISTS BannedUsers AS SELECT * FROM HostInfo""")
-        checkhosting = cursor.execute("""SELECT * FROM HostInfo""").fetchone()
+        checkhosting = cursor.execute("""SELECT * FROM HostInfo WHERE message_id IS NOT NULL""").fetchone()
         checknothosting = cursor.execute("""SELECT * FROM NotHosting""").fetchone()
         if checkhosting is None and checknothosting is None:
             shinyraidschannel = discord.utils.get(self.client.get_all_channels(), name='shiny-raids')
@@ -418,7 +418,7 @@ class RaidHelper(commands.Cog, discord.Client):
             db.commit()
 
             # See if anyone else is still hosting
-            checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id != null""").fetchone()
+            checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id IS NOT NULL""").fetchone()
             checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
             if checkhosting is None and checkmessage is None:
                 noraids = await shinyraidschannel.send(
@@ -639,7 +639,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 cursor.execute(f'DELETE FROM HostInfo WHERE user_id = {row[0]}')
                 db.commit()
 
-                checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id != null""").fetchone()
+                checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id IS NOT NULL""").fetchone()
                 checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
                 if checkhosting is None and checkmessage is None:
                     noraids = await shinyraidschannel.send(
@@ -927,7 +927,7 @@ class RaidHelper(commands.Cog, discord.Client):
                 await ctx.message.channel.send(embed=discord.Embed(
                 description='🔒 **Channel was successfully locked.**'))
 
-                checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id != null""").fetchone()
+                checkhosting = db.execute("""SELECT * FROM HostInfo WHERE message_id IS NOT NULL""").fetchone()
                 checkmessage = db.execute("""SELECT * FROM NotHosting""").fetchone()
                 if checkhosting is None and checkmessage is None:
                     noraids = await shinyraidschannel.send(

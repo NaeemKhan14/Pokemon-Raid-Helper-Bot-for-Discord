@@ -109,7 +109,7 @@ class GeneralCommands(commands.Cog, discord.Client):
         helpembed.add_field(name='Chess', value='`$chessplay`, `$move`, `$status`, `$offer`, `$accept`, `$concede`, `$games`, `$elo`, `$chessleaderboard`', inline=False)
         helpembed.add_field(name='Music', value='`$play`, `$skip`, `$queue`, `$join`, `$summon`, `$leave`, `$volume`, `$np`, `$pause`, `$resume`, `$stop`, `$shuffle`, `$loop`', inline=False)
         helpembed.add_field(name='Staff', value='`$giverole`', inline=False)
-        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`, `$addhours`, `$subtracthours`, `$cleardb`, `$forcedelete`, `$forcedeletevc`', inline=False)
+        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`, `$addhours`, `$subtracthours`, `$cleardb`, `$forcedelete`, `$forcedeletevc`, `$say`', inline=False)
         await ctx.message.channel.send(embed=helpembed)
 
 
@@ -343,6 +343,16 @@ class GeneralCommands(commands.Cog, discord.Client):
                              icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         await member.send(embed=welcomeembed)
 
+    # Talk
+    @commands.command()
+    @commands.has_role('Owner')
+    async def say(self, ctx, channel: discord.TextChannel = '', *, msg = ''):
+        if msg and channel:
+            await channel.send(str(msg))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  Please label a channel and the message to send. Example: **$say #channel-name Hello! I am Darkrai!**'))
+        await ctx.message.delete()
 
 
 

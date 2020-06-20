@@ -1,0 +1,3 @@
+Clefable = {
+    'Type': 'Fairy',
+}

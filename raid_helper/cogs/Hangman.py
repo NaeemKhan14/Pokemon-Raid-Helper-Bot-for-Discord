@@ -101,11 +101,11 @@ class Hangman(commands.Cog, discord.Client):
         str.lower(theme)
         if row is None and theme != 'themes':
             lines = []
-            if theme == 'classic':
-                with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanwords.txt", "r") as f:
-                    lines = f.readlines()
-            elif theme == 'pokemon':
+            if theme == 'pokemon':
                 with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanpokemon.txt", "r") as f:
+                    lines = f.readlines()
+            elif theme == 'classic' or theme == '':
+                with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanwords.txt", "r") as f:
                     lines = f.readlines()
 
 

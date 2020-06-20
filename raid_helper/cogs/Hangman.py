@@ -98,13 +98,13 @@ class Hangman(commands.Cog, discord.Client):
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         row = cursor.execute(f'SELECT * FROM Hangman WHERE user_id = {ctx.message.author.id}').fetchone()
-        str.lower(theme)
-        if row is None and theme != 'themes':
+        if row is None and str.lower(theme) != 'themes':
             lines = []
-            if theme == 'pokemon':
+            if str.lower(theme) == 'pokemon':
                 with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanpokemon.txt", "r") as f:
                     lines = f.readlines()
-            elif theme == 'classic' or theme == '':
+            elif str.lower(theme) == 'classic' or theme == '':
+                theme = 'classic'
                 with open("/home/eric/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper/cogs/hangmanwords.txt", "r") as f:
                     lines = f.readlines()
 

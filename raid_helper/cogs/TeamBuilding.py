@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
-import teampokemon
+from teampokemon import weaknessCheck
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import pokebase as pb
@@ -38,10 +38,11 @@ class TeamBuilding(commands.Cog, discord.Client):
                 try:
                     pokepaste = await self.client.wait_for('message', timeout=60.0, check=pokepastecheck)
                     await message1.edit(embed=discord.Embed(
-                        description=ctx.message.author.mention + ' Give me a moment while I analyze your team.'))
-                    driver = webdriver.Chrome()
-                    driver.get(str(pokepaste.content))
+                        description='<a:8299_Loading:724051710468817048> Give me a moment while I analyze your team.'))
+                    pokepastecontent = pokepaste.content
                     await pokepaste.delete()
+                    driver = webdriver.Chrome()
+                    driver.get(str(pokepastecontent))
                     count = 0
                     set = []
                     items = []
@@ -72,6 +73,36 @@ class TeamBuilding(commands.Cog, discord.Client):
                         count += 1
 
                     # Type checking
+                    types = []
+                    for i in set:
+                        for a in pb.pokemon(str.lower(i)).types:
+                            types.append(a.type.name)
+
+                    weakness = {
+                        'normal': 0,
+                        'fighting': 0,
+                        'flying': 0,
+                        'poison': 0,
+                        'ground': 0,
+                        'rock': 0,
+                        'bug': 0,
+                        'ghost': 0,
+                        'steel': 0,
+                        'fire': 0,
+                        'water': 0,
+                        'grass': 0,
+                        'electric': 0,
+                        'psychic': 0,
+                        'ice': 0,
+                        'dragon': 0,
+                        'dark': 0,
+                        'fairy': 0
+                    }
+
+                    print(types)
+                    for i in types:
+                        weaknessCheck(weakness, i)
+
 
 
                     if 'Trick Room' in moves:
@@ -119,10 +150,6 @@ class TeamBuilding(commands.Cog, discord.Client):
             set.append(mon[0])
             count += 1
         print(set)
-
-
-
-
 
 
 def setup(client):

@@ -51,10 +51,14 @@ class GeneralCommands(commands.Cog, discord.Client):
             def pingcheck(msg):
                 return msg.channel == streamchannel and msg.author == ctx.message.author
 
-            pingconfirm = await self.client.wait_for('message', check=pingcheck)
-            if streamrole.mention in pingconfirm.content:
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if streamrole.mention in pingconfirm.content:
+                    await streamrole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
                 await streamrole.edit(mentionable=False)
-            await message1.delete()
+                await message1.delete()
         elif role == 'giveaway' and (ctx.message.channel == giveawaychannel or ctx.message.channel == giveawaychannel2):
             await giveawayrole.edit(mentionable=True)
             message1 = await ctx.message.channel.send(
@@ -63,10 +67,14 @@ class GeneralCommands(commands.Cog, discord.Client):
             def pingcheck(msg):
                 return (msg.channel == giveawaychannel or msg.channel == giveawaychannel2) and msg.author == ctx.message.author
 
-            pingconfirm = await self.client.wait_for('message', check=pingcheck)
-            if giveawayrole.mention in pingconfirm.content:
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if giveawayrole.mention in pingconfirm.content:
+                    await giveawayrole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
                 await giveawayrole.edit(mentionable=False)
-            await message1.delete()
+                await message1.delete()
         elif role == 'events' and ctx.message.channel == eventschannel:
             await eventsrole.edit(mentionable=True)
             message1 = await ctx.message.channel.send(
@@ -75,10 +83,15 @@ class GeneralCommands(commands.Cog, discord.Client):
             def pingcheck(msg):
                 return msg.channel == eventschannel and msg.author == ctx.message.author
 
-            pingconfirm = await self.client.wait_for('message', check=pingcheck)
-            if eventsrole.mention in pingconfirm.content:
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if eventsrole.mention in pingconfirm.content:
+                    await eventsrole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
                 await eventsrole.edit(mentionable=False)
-            await message1.delete()
+                await message1.delete()
+
         elif role == 'smash' and ctx.message.channel == smashchannel:
             await smashrole.edit(mentionable=True)
             message1 = await ctx.message.channel.send(
@@ -87,10 +100,14 @@ class GeneralCommands(commands.Cog, discord.Client):
             def pingcheck(msg):
                 return msg.channel == smashchannel and msg.author == ctx.message.author
 
-            pingconfirm = await self.client.wait_for('message', check=pingcheck)
-            if smashrole.mention in pingconfirm.content:
-                await smashrole.edit(mentionable=False)
-            await message1.delete()
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if smashrole.mention in pingconfirm.content:
+                    await smashrole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
+                await streamrole.edit(mentionable=False)
+                await message1.delete()
         else:
             message = await ctx.message.channel.send(embed=discord.Embed(description='Use the syntax **$ping {role}** with the role being **lowercase in the respective channels**. *Here is a list of roles that can be pinged:* **stream**, **giveaway**, **events**, and **smash.**'))
             await asyncio.sleep(60)

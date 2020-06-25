@@ -10,7 +10,7 @@ client = commands.Bot(command_prefix='$', case_insensitive=True)
 client.remove_command('help')
 
 @client.command()
-@commands.has_role('admin')
+@commands.has_role('Owner')
 async def reload(ctx, extension):
     client.unload_extension(f'cogs.{extension}')
     client.load_extension(f'cogs.{extension}')

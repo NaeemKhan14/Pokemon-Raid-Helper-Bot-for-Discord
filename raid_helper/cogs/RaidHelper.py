@@ -947,6 +947,26 @@ class RaidHelper(commands.Cog, discord.Client):
         cursor.close()
         db.close()
 
+    @commands.command()
+    @commands.has_role('Owner')
+    async def clearhours(self, ctx, userid = ''):
+        if userid:
+            db = sqlite3.connect('RaidHelper.sqlite')
+            cursor = db.cursor()
+            row = cursor.execute(
+                f'SELECT * FROM Leaderboards WHERE user_id = {userid}').fetchone()
+            if row:
+                cursor.execute(f'DELETE FROM Leaderboards WHERE user_id = {userid}')
+                db.commit()
+                await ctx.message.channel.send(
+                    embed=discord.Embed(description='<:SeekPng:705124992349896795> **Successfully cleared!**'))
+            else:
+                await ctx.message.channel.send(embed=discord.Embed(
+                    description='<:x_:705214517961031751> **User does not exist in the database.**'))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751> **Please specify a user id after the command.**'))
+        await ctx.message.delete()
 
 def setup(client):
     client.add_cog(RaidHelper(client))

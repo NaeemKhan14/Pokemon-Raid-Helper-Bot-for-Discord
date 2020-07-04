@@ -119,14 +119,14 @@ class GeneralCommands(commands.Cog, discord.Client):
         helpembed = discord.Embed(description='This is a list of commands that can be used. Some may only be used by certain roles.')
         helpembed.set_author(name='Darkrai Commands', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         helpembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
-        helpembed.add_field(name='General', value='`$help`, `$ping`', inline=False)
+        helpembed.add_field(name='General', value='`$help`, `$ping`, `$suggest`', inline=False)
         helpembed.add_field(name='Shiny Raids', value='`$create`, `$delete`, `$hours`, `$leaderboard`, `$mute`, `$unmute`, `$ban`, `$unban`, `$lock`', inline=False)
         helpembed.add_field(name='Custom VCs', value='`$createvc`, `$deletevc`, `$vcinvite`, `$vcmute`, `$vcunmute`, `$vcban`, `$vcunban`', inline=False)
         helpembed.add_field(name='Games', value='`$hangman`, `$rps`', inline=False)
         helpembed.add_field(name='Chess', value='`$chessplay`, `$move`, `$status`, `$offer`, `$accept`, `$concede`, `$games`, `$elo`, `$chessleaderboard`', inline=False)
         helpembed.add_field(name='Music', value='`$play`, `$skip`, `$queue`, `$join`, `$summon`, `$leave`, `$volume`, `$np`, `$pause`, `$resume`, `$stop`, `$shuffle`, `$loop`', inline=False)
         helpembed.add_field(name='Staff', value='`$giverole`', inline=False)
-        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`, `$addhours`, `$subtracthours`, `$cleardb`, `$forcedelete`, `$forcedeletevc`, `$say`', inline=False)
+        helpembed.add_field(name='Owner Only', value='`$clown`, `$torture`, `$addhours`, `$subtracthours`, `$clearhours`, `$cleardb`, `$forcedelete`, `$forcedeletevc`, `$say`', inline=False)
         await ctx.message.channel.send(embed=helpembed)
 
 
@@ -354,6 +354,20 @@ class GeneralCommands(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  Please label a channel and the message to send. Example: **$say #channel-name Hello! I am Darkrai!**'))
         await ctx.message.delete()
+
+    # Suggest new features
+    @commands.command()
+    async def suggest(self, ctx, *, suggestion=''):
+        if suggestion:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:SeekPng:705124992349896795> Successfully sent in your suggestion!'))
+            suggestchannel = discord.utils.get(ctx.message.guild.text_channels, name='suggestions')
+            await suggestchannel.send(embed=discord.Embed(description='**' + suggestion + '**\n Sent from: ' + ctx.message.author.mention))
+        else:
+            await ctx.message.channel.send(embed=discord.Embed(
+                description='<:x_:705214517961031751>  Please add your suggestion after the command. Syntax: **$suggest <suggestion>**'))
+        await ctx.message.delete()
+
 
 
 

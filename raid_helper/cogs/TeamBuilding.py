@@ -68,8 +68,7 @@ class TeamBuilding(commands.Cog, discord.Client):
                         evs.append(' '.join(mon[mon.index('EVs:')+1:mon.index('Nature')-1]))
                         nature.append(mon[mon.index('Nature')-1])
 
-                        moves.append((' '.join(mon[mon.index('-')+1:len(mon)+1])).replace(' -', ', '))
-
+                        moves.append((' '.join(mon[mon.index('-')+1:len(mon)+1])).replace(' - ', ', ').split(', '))
                         count += 1
 
                     # Type checking
@@ -99,11 +98,46 @@ class TeamBuilding(commands.Cog, discord.Client):
                         'fairy': 0
                     }
 
-                    print(types)
+                    # See which types are most weak to
+                    weaknessTypes = []
+
                     for i in types:
                         weaknessCheck(weakness, i)
+                    for type, value in weakness.items():
+                        if value <= -4:
+                            suggestions.append('You are ' + str(abs(value)) + 'x weak to ' + type)
+                            weaknessTypes.append(type)
 
+                    # See which moves counter the weak types
+                    counterMoves = []
+                    specialMoves = []
+                    physicalMoves = []
 
+                    if len(weaknessTypes) > 0:
+                        for i in range(len(moves)):
+                            for a in range(len(moves[i])):
+                                move = pb.move(str.lower(moves[i][a]).replace(' ', '-'))
+                                for b in weaknessTypes:
+                                    if move.power:
+                                        for c in move.type.damage_relations.double_damage_to:
+                                            if c['name'] == b:
+                                                counterMoves.append(moves[i][a])
+                                        if move.damage_class.name == 'special':
+                                            specialMoves.append(moves[i][a])
+                                        else:
+                                            physicalMoves.append(moves[i][a])
+
+                    suggestions.append('Moves you have that counter this type are: **' + '**, **'.join(counterMoves))
+                    if counterMoves < len(weaknessTypes) * 2:
+                        suggestions.append('I would recommend having more moves that counter the type(s).')
+                    if abs(len(specialMoves) - len(physicalMoves)) > 4:
+                        if len(specialMoves) > len(physicalMoves):
+                            suggestions.append('You have ' + str(len(specialMoves)) +  ' special moves and ' + str(len(physicalMoves)) + ' physical moves. You should replace ' + str((len(specialMoves) - len(physicalMoves))/2) + ' of your special moves with physical moves for balance.')
+                        else:
+                            suggestions.append('You have ' + str(len(specialMoves)) + ' special moves and ' + str(
+                                len(physicalMoves)) + ' physical moves. You should replace ' + str((len(
+                                physicalMoves) - len(
+                                specialMoves)) / 2) + ' of your physical moves with special moves for balance.')
 
                     if 'Trick Room' in moves:
                         if moves.count('Trick Room') > 1:
@@ -111,12 +145,17 @@ class TeamBuilding(commands.Cog, discord.Client):
                         if 'Dusclops' not in set:
                             suggestions.append('Dusclops is a way better alternative as a TR setter.')
 
+                    if 'Drought' in abilities:
+                        if 'Venusaur' not in set:
+                            suggestions.append('Venusaur is a very strong Pokemon for a sun team.')
+                            
 
-                    print(items)
-                    print(abilities)
-                    print(evs)
-                    print(nature)
-                    print(moves)
+
+
+                    if len(suggestions) > 0:
+                        await message1.edit(embed=discord.Embed(description='\n'.join(suggestions)))
+                    else:
+                        await message1.edit(embed=discord.Embed(description='I saw no changes. Your team is very balanced!'))
 
 
                 except asyncio.TimeoutError:

@@ -10,27 +10,130 @@ def weaknessCheck(dict, type):
         dict['dark'] += 2
         dict['fairy'] -= 2
     elif type == 'flying':
-        pass
+        dict['fighting'] += 2
+        dict['ground'] += 2
+        dict['rock'] -= 2
+        dict['bug'] += 2
+        dict['grass'] += 2
+        dict['electric'] -= 2
+        dict['ice'] -= 2
     elif type == 'poison':
-        pass
+        dict['fighting'] += 2
+        dict['poison'] += 2
+        dict['ground'] -= 2
+        dict['bug'] += 2
+        dict['grass'] += 2
+        dict['psychic'] -= 2
+        dict['fairy'] += 2
     elif type == 'ground':
-        pass
+        dict['poison'] += 2
+        dict['rock'] += 2
+        dict['water'] -= 2
+        dict['grass'] -= 2
+        dict['electric'] += 2
+        dict['ice'] -= 2
     elif type == 'rock':
-        pass
+        dict['normal'] -= 2
+        dict['fighting'] -= 2
+        dict['flying'] -= 2
+        dict['poison'] -= 2
+        dict['ground'] -= 2
+        dict['steel'] -= 2
+        dict['fire'] -= 2
+        dict['water'] -= 2
+        dict['grass'] -= 2
     elif type == 'bug':
-        pass
+        dict['fighting'] += 2
+        dict['flying'] -= 2
+        dict['ground'] += 2
+        dict['rock'] -= 2
+        dict['fire'] -= 2
+        dict['grass'] += 2
     elif type == 'ghost':
-        pass
+        dict['normal'] += 2
+        dict['fighting'] += 2
+        dict['poison'] += 2
+        dict['bug'] += 2
+        dict['ghost'] -= 2
+        dict['dark'] -= 2
     elif type == 'steel':
-        pass
+        dict['normal'] += 2
+        dict['fighting'] -= 2
+        dict['flying'] += 2
+        dict['poison'] += 2
+        dict['ground'] -= 2
+        dict['rock'] += 2
+        dict['bug'] += 2
+        dict['steel'] += 2
+        dict['fire'] -= 2
+        dict['grass'] += 2
+        dict['psychic'] += 2
+        dict['ice'] += 2
+        dict['dragon'] += 2
+        dict['fairy'] += 2
     elif type == 'fire':
-        pass
+        dict['ground'] -= 2
+        dict['rock'] -= 2
+        dict['bug'] += 2
+        dict['steel'] += 2
+        dict['fire'] += 2
+        dict['water'] -= 2
+        dict['grass'] += 2
+        dict['ice'] += 2
+        dict['fairy'] += 2
     elif type == 'water':
-        pass
+        dict['steel'] += 2
+        dict['fire'] += 2
+        dict['water'] += 2
+        dict['grass'] -= 2
+        dict['electric'] -= 2
+        dict['ice'] += 2
     elif type == 'grass':
-        pass
+        dict['flying'] -= 2
+        dict['poison'] -= 2
+        dict['ground'] += 2
+        dict['bug'] -= 2
+        dict['fire'] -= 2
+        dict['water'] += 2
+        dict['grass'] += 2
+        dict['electric'] += 2
+        dict['ice'] -= 2
     elif type == 'electric':
-        pass
+        dict['flying'] += 2
+        dict['ground'] -= 2
+        dict['steel'] += 2
+        dict['electric'] += 2
     elif type == 'psychic':
-        pass
-
+        dict['fighting'] += 2
+        dict['bug'] -= 2
+        dict['ghost'] -= 2
+        dict['psychic'] += 2
+        dict['dark'] -= 2
+    elif type == 'ice':
+        dict['fighting'] -= 2
+        dict['rock'] -= 2
+        dict['steel'] -= 2
+        dict['fire'] -= 2
+        dict['ice'] += 2
+    elif type == 'dragon':
+        dict['fire'] += 2
+        dict['water'] += 2
+        dict['grass'] += 2
+        dict['electric'] += 2
+        dict['ice'] -= 2
+        dict['dragon'] -= 2
+        dict['fairy'] -= 2
+    elif type == 'dark':
+        dict['fighting'] -= 2
+        dict['bug'] -= 2
+        dict['ghost'] += 2
+        dict['psychic'] += 2
+        dict['dark'] += 2
+        dict['fairy'] -= 2
+    elif type == 'fairy':
+        dict['fighting'] += 2
+        dict['poison'] -= 2
+        dict['bug'] += 2
+        dict['steel'] -= 2
+        dict['dragon'] += 2
+        dict['dark'] += 2

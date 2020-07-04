@@ -134,7 +134,7 @@ class TeamBuilding(commands.Cog, discord.Client):
                                             physicalMoves.append(moves[i][a])
 
                     suggestions.append('Moves you have that counter this type are: **' + '**, **'.join(counterMoves))
-                    if counterMoves < len(weaknessTypes) * 2:
+                    if len(counterMoves) < len(weaknessTypes) * 2:
                         suggestions.append('I would recommend having more moves that counter the type(s).')
                     if abs(len(specialMoves) - len(physicalMoves)) > 4:
                         if len(specialMoves) > len(physicalMoves):

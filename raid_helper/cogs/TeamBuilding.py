@@ -41,7 +41,13 @@ class TeamBuilding(commands.Cog, discord.Client):
                         description='<a:8299_Loading:724051710468817048> Give me a moment while I analyze your team.'))
                     pokepastecontent = pokepaste.content
                     await pokepaste.delete()
-                    driver = webdriver.Chrome()
+                    chrome_options = webdriver.ChromeOptions()
+                    chrome_options.add_argument('--headless')
+                    chrome_options.add_argument('--no-sandbox')
+                    chrome_options.add_argument('--disable-dev-shm-usage')
+
+                    driver = webdriver.Chrome(chrome_options=chrome_options)
+
                     driver.get(str(pokepastecontent))
                     count = 0
                     set = []

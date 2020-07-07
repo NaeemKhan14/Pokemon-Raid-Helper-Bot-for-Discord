@@ -208,21 +208,16 @@ class RaidHelper(commands.Cog, discord.Client):
                     def check2(reaction, user):
                         return user.id == row[0] and reaction.message.id == message1.id and (reaction.emoji == '⭐' or reaction.emoji == '🟧' or reaction.emoji == '🇺')
                     reaction, user = await self.client.wait_for('reaction_add', check=check2)
-                    await message1.remove_reaction('⭐', message1.author)
-                    await message1.remove_reaction('🟧', message1.author)
-                    await message1.remove_reaction('🇺', message1.author)
                     if reaction.emoji == '⭐':
                         step3content = 'Star'
-                        await message1.remove_reaction('⭐', user)
                         onstep4 = True
                     elif reaction.emoji == '🟧':
                         step3content = 'Square'
-                        await message1.remove_reaction('🟧', user)
                         onstep4 = True
                     elif reaction.emoji == '🇺':
                         step3content = 'Unknown'
-                        await message1.remove_reaction('🇺', user)
                         onstep4 = True
+                    await message1.clear_reactions()
                 if onstep4:
                     await message1.edit(embed=discord.Embed(
                         description="React with 1\N{combining enclosing keycap} if it is ability 1, 2\N{combining enclosing keycap} if it's ability 2, H if it's hidden ability, and 🇺 if you are unsure.").set_footer(
@@ -236,27 +231,20 @@ class RaidHelper(commands.Cog, discord.Client):
                     def check3(reaction, user):
                         return user.id == row[0] and reaction.message.id == message1.id and (reaction.emoji == '1\N{combining enclosing keycap}' or reaction.emoji == '2\N{combining enclosing keycap}' or reaction.emoji == '🇭' or reaction.emoji == '🇺')
                     reaction, user = await self.client.wait_for('reaction_add', check=check3)
-                    await message1.remove_reaction('1\N{combining enclosing keycap}', message1.author)
-                    await message1.remove_reaction('2\N{combining enclosing keycap}', message1.author)
-                    await message1.remove_reaction('🇭', message1.author)
-                    await message1.remove_reaction('🇺', message1.author)
 
                     if reaction.emoji == '1\N{combining enclosing keycap}':
                         step4content = '1'
-                        await message1.remove_reaction('1\N{combining enclosing keycap}', user)
                         onstep5 = True
                     elif reaction.emoji == '2\N{combining enclosing keycap}':
                         step4content = '2'
-                        await message1.remove_reaction('2\N{combining enclosing keycap}', user)
                         onstep5 = True
                     elif reaction.emoji == '🇭':
                         step4content = 'Hidden'
-                        await message1.remove_reaction('🇭', user)
                         onstep5 = True
                     elif reaction.emoji == '🇺':
                         step4content = 'Unknown'
-                        await message1.remove_reaction('🇺', user)
                         onstep5 = True
+                    await message1.clear_reactions()
                 if onstep5:
                     await message1.edit(embed=discord.Embed(
                         description="React with ♀ if it is female, ♂ if it's male, and 🇺 if you are unsure.").set_footer(
@@ -271,33 +259,20 @@ class RaidHelper(commands.Cog, discord.Client):
                                     reaction.emoji == '♂' or reaction.emoji == '♀' or reaction.emoji == '🇺')
 
                     reaction, user = await self.client.wait_for('reaction_add', check=check4)
-                    await message1.remove_reaction('♀', message1.author)
-                    await message1.remove_reaction('♂', message1.author)
-                    await message1.remove_reaction('🇺', message1.author)
                     if reaction.emoji == '♀':
                         step5content = 'Female'
-                        await message1.remove_reaction('♀', user)
                         onstep6 = True
-                        await message1.edit(embed=discord.Embed(
-                            description="Please type any custom rules you may have such as no DD or removing off friend's list after hosting.").set_footer(
-                            text=
-                            'Step 6/6'))
                     elif reaction.emoji == '♂':
                         step5content = 'Male'
-                        await message1.remove_reaction('♂', user)
                         onstep6 = True
-                        await message1.edit(embed=discord.Embed(
-                            description="Please type any custom rules you may have such as no DD or removing off friend's list after hosting.").set_footer(
-                            text=
-                            'Step 6/6'))
                     elif reaction.emoji == '🇺':
                         step5content = 'Unknown'
-                        await message1.remove_reaction('🇺', user)
                         onstep6 = True
-                        await message1.edit(embed=discord.Embed(
-                            description="Please type any custom rules you may have such as no DD or removing off friend's list after hosting.").set_footer(
-                            text=
-                            'Step 6/6'))
+                    await message1.clear_reactions()
+                    await message1.edit(embed=discord.Embed(
+                        description="Please type any custom rules you may have such as no DD or removing off friend's list after hosting.").set_footer(
+                        text=
+                        'Step 6/6'))
                 while onstep6:
                     step6 = await self.client.wait_for('message', check=check)
                     step6content = step6.content
@@ -810,21 +785,21 @@ class RaidHelper(commands.Cog, discord.Client):
             await leaderboardmsg.add_reaction('🔽')
 
             try:
-                reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check)
-                await leaderboardmsg.remove_reaction('🔽', user)
-                await leaderboardmsg.remove_reaction('🔽', leaderboardmsg.author)
+                await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+                await leaderboardmsg.clear_reactions()
                 await leaderboardmsg.edit(embed=leaderboardembed2)
                 await leaderboardmsg.add_reaction('🔼')
                 try:
-                    reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check2)
-                    await leaderboardmsg.remove_reaction('🔼', user)
-                    await leaderboardmsg.remove_reaction('🔼', leaderboardmsg.author)
+                    await self.client.wait_for('reaction_add', timeout=60.0, check=check2)
+                    await leaderboardmsg.clear_reactions()
                     await leaderboardmsg.edit(embed=leaderboardembed)
                 except asyncio.TimeoutError:
                     active = False
+                    await leaderboardmsg.clear_reactions()
 
             except asyncio.TimeoutError:
                 active = False
+                await leaderboardmsg.clear_reactions()
 
         cursor.close()
         db.close()

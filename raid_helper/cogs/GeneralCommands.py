@@ -10,7 +10,7 @@ class GeneralCommands(commands.Cog, discord.Client):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await self.client.change_presence(activity=discord.Game('discord.gg/cool | $help'))
+        await self.client.change_presence(activity=discord.Game('discord.gg/walter | $help'))
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         cursor.execute(
@@ -351,6 +351,7 @@ class GeneralCommands(commands.Cog, discord.Client):
             await ctx.message.channel.send(embed=discord.Embed(
                 description='<:x_:705214517961031751>  Please add your suggestion after the command. Syntax: **$suggest <suggestion>**'))
         await ctx.message.delete()
+    
 
 
 

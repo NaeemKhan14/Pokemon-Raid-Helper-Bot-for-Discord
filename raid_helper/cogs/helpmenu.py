@@ -17,7 +17,7 @@ class HelpMenu(commands.Cog, discord.Client):
         helpembed = discord.Embed(description='This is a list of commands that can be used. Some may only be used by certain roles.')
         helpembed.set_author(name='Darkrai Commands', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
         helpembed.set_footer(text='Darkrai • Created by Cooly4477 & Charming Potato', icon_url='https://cdn.discordapp.com/attachments/704174855813070901/712733586632998963/491Darkrai.png')
-        helpembed.add_field(name='General', value='`$help`, `$ping`, `$suggest`, `$poll`', inline=False)
+        helpembed.add_field(name='General', value='`$help`, `$ping`, `$suggest`, `$poll`, `$meme`, `$video`, `$smogon`', inline=False)
         helpembed.add_field(name='Shiny Raids', value='`$create`, `$delete`, `$hours`, `$leaderboard`, `$mute`, `$unmute`, `$ban`, `$unban`, `$lock`', inline=False)
         helpembed.add_field(name='Custom VCs', value='`$createvc`, `$deletevc`, `$vcinvite`, `$vcmute`, `$vcunmute`, `$vcban`, `$vcunban`', inline=False)
         helpembed.add_field(name='Games', value='`$hangman`, `$rps`', inline=False)

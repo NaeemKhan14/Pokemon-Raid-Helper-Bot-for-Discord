@@ -33,7 +33,7 @@ class Snipe(commands.Cog, discord.Client):
         snipechannel = discord.utils.get(mydiscord.text_channels, name='shoppy')
         while True:
             try:
-                await mydiscord.edit(vanity_code='cool')
+                await mydiscord.edit(vanity_code='cod')
                 await snipechannel.send('SUCCESS COOL IS SNIPED!')
             except discord.HTTPException:
                 pass

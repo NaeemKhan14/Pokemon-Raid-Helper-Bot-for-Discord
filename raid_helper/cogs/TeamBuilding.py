@@ -196,6 +196,15 @@ class TeamBuilding(commands.Cog, discord.Client):
             count += 1
         print(set)
 
+    @commands.command()
+    async def test3(self, ctx):
+        driver = webdriver.Chrome()
+        driver.get("https://www.smogon.com/dex/ss/pokemon/shuckle")
+        formats = driver.find_elements_by_class_name('PokemonPage-StrategySelector')
+        for i in range(len(formats) + 1):
+            print(driver.find_element_by_xpath(f'//*[@id="container"]/div/main/div/section/section[2]/div/div[1]/ul/li[{i+1}]').text)
+
+
 
 def setup(client):
     client.add_cog(TeamBuilding(client))

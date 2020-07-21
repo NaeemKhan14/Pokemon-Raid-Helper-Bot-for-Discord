@@ -21,7 +21,12 @@ class Smogon(commands.Cog, discord.Client):
         if pokemon:
             sm = False
             ss = False
-            driver = webdriver.Chrome()
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+
+            driver = webdriver.Chrome(chrome_options=chrome_options)
             driver.get("https://www.smogon.com/dex/ss/pokemon/" + pokemon)
             try:
                 driver.find_element_by_xpath('// *[ @ id = "container"] / div / main / div / section / section[2] / div / div[1]')

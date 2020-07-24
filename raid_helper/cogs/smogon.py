@@ -3,6 +3,9 @@ from discord.ext import commands
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import asyncio
+import pytz
+import datetime
+
 
 from selenium.common.exceptions import NoSuchElementException
 
@@ -19,6 +22,9 @@ class Smogon(commands.Cog, discord.Client):
     @commands.command()
     async def smogon(self, ctx, pokemon=''):
         if pokemon:
+            await ctx.message.delete()
+            message1 = await ctx.send(embed=discord.Embed(
+                        description='<a:8299_Loading:724051710468817048> Searching for this Pokemon...'))
             sm = False
             ss = False
             chrome_options = webdriver.ChromeOptions()
@@ -44,7 +50,7 @@ class Smogon(commands.Cog, discord.Client):
                 format = []
 
                 if sm and ss:
-                    message1 = await ctx.send(embed=discord.Embed(
+                    await message1.edit(embed=discord.Embed(
                         description='You have 1 minute to select the game you would like to get the set from:\n1\N{combining enclosing keycap} Sword & Shield\n2\N{combining enclosing keycap} Sun & Moon'))
                     await message1.add_reaction('1\N{combining enclosing keycap}')
                     await message1.add_reaction('2\N{combining enclosing keycap}')
@@ -63,24 +69,29 @@ class Smogon(commands.Cog, discord.Client):
                             embed=discord.Embed(
                                 description='<a:8299_Loading:724051710468817048> Searching for formats...'))
                     except asyncio.TimeoutError:
-                        await ctx.message.delete()
-                        await message1.delete()
+                        await message1.edit(embed=discord.Embed(description=ctx.message.author.mention + " You ran out of time!"))
+                        await message1.clear_reactions()
                         go = False
                 elif ss:
                     game = 'ss'
-                    message1 = await ctx.send(
+                    await message1.edit(
                         embed=discord.Embed(description='<a:8299_Loading:724051710468817048> Searching for formats...'))
                 elif sm:
                     game = 'sm'
-                    message1 = await ctx.send(
+                    await message1.edit(
                         embed=discord.Embed(description='<a:8299_Loading:724051710468817048> Searching for formats...'))
 
                 if go:
                     driver.get("https://www.smogon.com/dex/" + game + "/pokemon/" + pokemon)
                     formats = driver.find_elements_by_class_name('PokemonPage-StrategySelector')
                     for i in range(len(formats) + 1):
-                        format.append(driver.find_element_by_xpath(
-                            f'//*[@id="container"]/div/main/div/section/section[2]/div/div[1]/ul/li[{i + 1}]').text)
+                        try:
+                            format.append(driver.find_element_by_xpath(
+                                f'//*[@id="container"]/div/main/div/section/section[2]/div/div[1]/ul/li[{i + 1}]').text)
+                        except NoSuchElementException:
+                            pass
+
+
                     messageArray = []
                     emojis = []
                     for i in range(len(format)):
@@ -96,23 +107,28 @@ class Smogon(commands.Cog, discord.Client):
                     try:
                         reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check2)
                         await message1.clear_reactions()
+
+
                         driver.get("https://www.smogon.com/dex/" + game + "/pokemon/" + pokemon + "/" + format[emojis.index(reaction.emoji)])
                         titles = []
-
                         try:
-                            titles.append(driver.find_element_by_xpath('//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[2]/div/h1').text)
+                            titles.append(driver.find_element_by_xpath(
+                                '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[1]/div/h1').text)
+                        except NoSuchElementException:
                             try:
-                                titles.append(driver.find_element_by_xpath(
-                                    '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[3]/div/h1').text)
+                                titles.append(driver.find_element_by_xpath('//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[2]/div/h1').text)
                                 try:
                                     titles.append(driver.find_element_by_xpath(
-                                        '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[4]/div/h1').text)
+                                        '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[3]/div/h1').text)
+                                    try:
+                                        titles.append(driver.find_element_by_xpath(
+                                            '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[4]/div/h1').text)
+                                    except NoSuchElementException:
+                                        pass
                                 except NoSuchElementException:
                                     pass
                             except NoSuchElementException:
                                 pass
-                        except NoSuchElementException:
-                            pass
 
                         if len(titles) > 1:
                             messageArray = []
@@ -132,23 +148,23 @@ class Smogon(commands.Cog, discord.Client):
                                 content = driver.page_source
                                 soup = BeautifulSoup(content, 'html.parser')
                                 ta = soup.find('textarea')
-                                await message1.edit(embed=discord.Embed(description='**' + titles[emojis.index(reaction.emoji)] + '**\n' + ta.get_text()))
+                                await message1.edit(embed=discord.Embed(description='**' + titles[emojis.index(reaction.emoji)] + '**\n' + ta.get_text(), timestamp=datetime.datetime.now()).set_footer(text='Requested by ' + ctx.message.author.name))
                             except asyncio.TimeoutError:
-                                await ctx.message.delete()
-                                await message1.delete()
+                                await message1.edit(embed=discord.Embed(description=ctx.message.author.mention + " You ran out of time!"))
+                                await message1.clear_reactions()
                         else:
                             button = driver.find_element_by_xpath(
-                                '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[2]/div/button')
+                                '//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[1]/div/button')
                             button.click()
                             content = driver.page_source
-                            soup = BeautifulSoup(content)
+                            soup = BeautifulSoup(content, 'html.parser')
                             ta = soup.find('textarea')
                             await message1.edit(embed=discord.Embed(
-                                description='**' + titles[0] + '**\n' + ta.get_text()))
+                                description='**' + titles[0] + '**\n' + ta.get_text(), timestamp=datetime.datetime.now()).set_footer(text='Requested by ' + ctx.message.author.name))
 
                     except asyncio.TimeoutError:
-                        await ctx.message.delete()
-                        await message1.delete()
+                        await message1.edit(embed=discord.Embed(description=ctx.message.author.mention + " You ran out of time!"))
+                        await message1.clear_reactions()
 
             else:
                 await ctx.send(embed=discord.Embed(
@@ -158,13 +174,6 @@ class Smogon(commands.Cog, discord.Client):
         else:
             await ctx.send(embed=discord.Embed(description='<:x_:705214517961031751>  **Invalid syntax. Please provide a Pokemon after the command. Example:** ***$smogon pikachu***'))
 
-        # driver.get("https://www.smogon.com/dex/ss/pokemon/")
-        # button = driver.find_element_by_xpath('//*[@id="container"]/div/main/div/section/section[2]/div/div[2]/div[2]/div/button')
-        # button.click()
-        # content = driver.page_source
-        # soup = BeautifulSoup(content)
-        # ta = soup.find('textarea')
-        # print(ta.get_text())
 
 
 

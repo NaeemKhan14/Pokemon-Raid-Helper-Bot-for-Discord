@@ -234,8 +234,8 @@ class GeneralCommands(commands.Cog, discord.Client):
             row = cursor.execute(f'SELECT * FROM Clown WHERE user_id = {message.author.id}').fetchone()
             if row[1] > 0:
                 await message.add_reaction('🤡')
-                await message.add_reaction('<:clownoftheyear:689910124806013090>')
-                await message.add_reaction('<:cuteclown:720000248574902383>')
+                await message.add_reaction('<:clownoftheyear:735914794355392593>')
+                await message.add_reaction('<:cuteclown:735657597578772570>')
 
                 time = row[1] - 1
                 cursor.execute(

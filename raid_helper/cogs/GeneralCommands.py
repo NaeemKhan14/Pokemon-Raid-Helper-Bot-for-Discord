@@ -29,7 +29,7 @@ class GeneralCommands(commands.Cog, discord.Client):
 
     # Ping certain roles command
     @commands.command()
-    @commands.has_any_role('Streamer', 'Giveaway', 'Event Host', 'Smash Ultimate')
+    @commands.has_any_role('Streamer', 'Giveaways', 'Event Host', 'Smash Ultimate')
     async def ping(self, ctx, role=''):
         streamchannel = discord.utils.get(self.client.get_all_channels(), name='stream-announcements')
         giveawaychannel = discord.utils.get(self.client.get_all_channels(), name='giveaways')

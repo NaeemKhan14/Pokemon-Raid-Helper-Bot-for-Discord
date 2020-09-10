@@ -10,7 +10,7 @@ class GeneralCommands(commands.Cog, discord.Client):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await self.client.change_presence(activity=discord.Game('discord.gg/walter | $help'))
+        await self.client.change_presence(activity=discord.Game('Ampharos.net | $help'))
         db = sqlite3.connect('RaidHelper.sqlite')
         cursor = db.cursor()
         cursor.execute(
@@ -29,37 +29,27 @@ class GeneralCommands(commands.Cog, discord.Client):
 
     # Ping certain roles command
     @commands.command()
-    @commands.has_any_role('Streamer', 'Giveaways', 'Event Host', 'Smash Ultimate')
-    async def ping(self, ctx, role=''):
-        streamchannel = discord.utils.get(self.client.get_all_channels(), name='stream-announcements')
+    async def ping(self, ctx, *, role=''):
+
         giveawaychannel = discord.utils.get(self.client.get_all_channels(), name='giveaways')
         giveawaychannel2 = discord.utils.get(self.client.get_all_channels(), name='private-giveaways')
         eventschannel = discord.utils.get(self.client.get_all_channels(), name='event-announcements')
         smashchannel = discord.utils.get(self.client.get_all_channels(), name='smash-ultimate')
+        amonguschannel = discord.utils.get(self.client.get_all_channels(), name='among-us')
+        battlechannel = discord.utils.get(self.client.get_all_channels(), name='battles-and-comp')
+        pogochannel = discord.utils.get(self.client.get_all_channels(), name='pogo-raids')
 
-        streamrole = discord.utils.get(ctx.message.guild.roles, name='Stream Notifications')
+
         giveawayrole = discord.utils.get(ctx.message.guild.roles, name='Giveaway')
         eventsrole = discord.utils.get(ctx.message.guild.roles, name='Events')
         smashrole = discord.utils.get(ctx.message.guild.roles, name='Smash Ultimate')
+        amongusrole = discord.utils.get(ctx.message.guild.roles, name='Among Us')
+        battlerole = discord.utils.get(ctx.message.guild.roles, name='Pokemon Battles')
+        pogorole = discord.utils.get(ctx.message.guild.roles, name='Pokemon GO Raids')
 
         await ctx.message.delete()
 
-        if role == 'stream' and ctx.message.channel == streamchannel:
-            await streamrole.edit(mentionable=True)
-            message1 = await ctx.message.channel.send(embed=discord.Embed(description=streamrole.mention + ' **is now able to be pinged.**'))
-
-            def pingcheck(msg):
-                return msg.channel == streamchannel and msg.author == ctx.message.author
-
-            try:
-                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
-                if streamrole.mention in pingconfirm.content:
-                    await streamrole.edit(mentionable=False)
-                await message1.delete()
-            except asyncio.TimeoutError:
-                await streamrole.edit(mentionable=False)
-                await message1.delete()
-        elif role == 'giveaway' and (ctx.message.channel == giveawaychannel or ctx.message.channel == giveawaychannel2):
+        if str.lower(role) == 'giveaway' and (ctx.message.channel == giveawaychannel or ctx.message.channel == giveawaychannel2):
             await giveawayrole.edit(mentionable=True)
             message1 = await ctx.message.channel.send(
                 embed=discord.Embed(description=giveawayrole.mention + ' **is now able to be pinged.**'))
@@ -75,7 +65,7 @@ class GeneralCommands(commands.Cog, discord.Client):
             except asyncio.TimeoutError:
                 await giveawayrole.edit(mentionable=False)
                 await message1.delete()
-        elif role == 'events' and ctx.message.channel == eventschannel:
+        elif str.lower(role) == 'events' and ctx.message.channel == eventschannel:
             await eventsrole.edit(mentionable=True)
             message1 = await ctx.message.channel.send(
                 embed=discord.Embed(description=eventsrole.mention + ' **is now able to be pinged.**'))
@@ -92,7 +82,7 @@ class GeneralCommands(commands.Cog, discord.Client):
                 await eventsrole.edit(mentionable=False)
                 await message1.delete()
 
-        elif role == 'smash' and ctx.message.channel == smashchannel:
+        elif str.lower(role) == 'smash' and ctx.message.channel == smashchannel:
             await smashrole.edit(mentionable=True)
             message1 = await ctx.message.channel.send(
                 embed=discord.Embed(description=smashrole.mention + ' **is now able to be pinged.**'))
@@ -106,11 +96,64 @@ class GeneralCommands(commands.Cog, discord.Client):
                     await smashrole.edit(mentionable=False)
                 await message1.delete()
             except asyncio.TimeoutError:
-                await streamrole.edit(mentionable=False)
+                await smashrole.edit(mentionable=False)
                 await message1.delete()
+        elif str.lower(role) == 'among us' and ctx.message.channel == amonguschannel:
+            await amongusrole.edit(mentionable=True)
+            message1 = await ctx.message.channel.send(
+                embed=discord.Embed(description=amongusrole.mention + ' **is now able to be pinged.**'))
+
+            def pingcheck(msg):
+                return msg.channel == amonguschannel and msg.author == ctx.message.author
+
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if amongusrole.mention in pingconfirm.content:
+                    await amongusrole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
+                await amongusrole.edit(mentionable=False)
+                await message1.delete()
+        elif str.lower(role) == 'battles' and ctx.message.channel == battlechannel:
+            await battlerole.edit(mentionable=True)
+            message1 = await ctx.message.channel.send(
+                embed=discord.Embed(description=battlerole.mention + ' **is now able to be pinged.**'))
+
+            def pingcheck(msg):
+                return msg.channel == battlechannel and msg.author == ctx.message.author
+
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if battlerole.mention in pingconfirm.content:
+                    await battlerole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
+                await battlerole.edit(mentionable=False)
+                await message1.delete()
+        elif str.lower(role) == 'pogo' and ctx.message.channel == pogochannel:
+            await pogorole.edit(mentionable=True)
+            message1 = await ctx.message.channel.send(
+                embed=discord.Embed(description=pogorole.mention + ' **is now able to be pinged.**'))
+
+            def pingcheck(msg):
+                return msg.channel == pogochannel and msg.author == ctx.message.author
+
+            try:
+                pingconfirm = await self.client.wait_for('message', timeout=60.0, check=pingcheck)
+                if pogorole.mention in pingconfirm.content:
+                    await pogorole.edit(mentionable=False)
+                await message1.delete()
+            except asyncio.TimeoutError:
+                await pogorole.edit(mentionable=False)
+                await message1.delete()
+        elif role == '':
+            message = await ctx.message.channel.send(embed=discord.Embed(description='Use the syntax **$ping *role* ** in the respective channel.\n*Here is a list of roles that can be pinged:*\n**giveaway**, **events**, **smash**, **battles**, **pogo**, and **among us**'))
+            await asyncio.sleep(45)
+            await message.delete()
         else:
-            message = await ctx.message.channel.send(embed=discord.Embed(description='Use the syntax **$ping {role}** with the role being **lowercase in the respective channels**. *Here is a list of roles that can be pinged:* **stream**, **giveaway**, **events**, and **smash.**'))
-            await asyncio.sleep(60)
+            message = await ctx.message.channel.send(embed=discord.Embed(
+                description='**Make sure you spelled the role correctly and you are in the correct channel to ping.**'))
+            await asyncio.sleep(30)
             await message.delete()
 
 

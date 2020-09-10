@@ -35,6 +35,7 @@ class Snipe(commands.Cog, discord.Client):
             try:
                 await mydiscord.edit(vanity_code='cool')
                 await snipechannel.send('SUCCESS COOL IS SNIPED!')
+                break
             except discord.HTTPException:
                 pass
             await asyncio.sleep(1)

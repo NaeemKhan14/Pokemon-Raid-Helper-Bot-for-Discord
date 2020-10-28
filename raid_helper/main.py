@@ -5,7 +5,9 @@ import sys
 sys.path.insert(0, "C:/Users/Eric/Desktop/Pokemon-Raid-Helper-Bot-for-Discord/raid_helper")
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-client = commands.Bot(command_prefix='$', case_insensitive=True)
+intents = discord.Intents.default()
+intents.members = True
+client = commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
 
 client.remove_command('help')
 

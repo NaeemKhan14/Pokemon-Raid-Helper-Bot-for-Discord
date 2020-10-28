@@ -29,7 +29,7 @@ class Snipe(commands.Cog, discord.Client):
 
 
     async def snipe(self):
-        mydiscord = discord.utils.get(self.client.guilds, name="Cooly's Shiny Mons")
+        mydiscord = discord.utils.get(self.client.guilds, name="Cooly's Shiny Pokemon")
         snipechannel = discord.utils.get(mydiscord.text_channels, name='shoppy')
         while True:
             try:
